@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 
 // Register a new user
 const registerUser = (req, res) => {
-  const { fullname, username, email, contact, password, userType, patientInfo } = req.body;
+  const { firstname, middlename, lastname, extension, email, contact, password, userType, patientInfo } = req.body;
   console.log("Received data:", req.body);
   
   console.log("Registering user:", req.body); // <-- Add this log
@@ -14,7 +14,7 @@ const registerUser = (req, res) => {
       return res.status(500).json({ message: 'Error hashing password' });
     }
     
-    User.createUser({ fullname, username, email, contact, password: hashedPassword, userType }, (error, result) => {
+    User.createUser({ firstname, middlename, lastname, email, extension, contact, password: hashedPassword, userType }, (error, result) => {
       if (error) {
         return res.status(500).json({ message: 'Database error', error });
       }
@@ -47,11 +47,16 @@ const registerUser = (req, res) => {
 
 // Login function to authenticate user
 const loginUser = (req, res) => {
+  console.log("Request body:", req.body);
   const { email, password } = req.body;
 
   User.findUserByEmail(email, (err, user) => {
     if (err || !user) {
       return res.status(400).json({ message: 'User not found' });
+    }
+
+    if (!user.emailVerified) {
+      return res.status(403).json({ message: 'Your email is not verified. Please verify your email and try again.' });
     }
 
     bcrypt.compare(password, user.password, (err, result) => {
@@ -60,9 +65,20 @@ const loginUser = (req, res) => {
       }
 
       // Generate JWT token
-      const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ 
+        id: user.id, 
+        email: user.email, 
+        guardianId: user.guardianId,
+        userType: user.userType 
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' });
 
-      res.json({ message: 'Login successful', token });
+      res.json({ 
+        message: 'Login successful', 
+        token, 
+        userType: user.userType, 
+      });
     });
   });
 };
@@ -104,17 +120,23 @@ const verifyEmail = (req, res) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
+      console.error('Token verification failed:', err);
       return res.status(400).json({ message: 'Invalid or expired token' });
     }
 
+    console.log('Decoded email:', decoded.email);
+
     User.updateEmailVerification(decoded.email, (err, result) => {
       if (err) {
+        console.error('Database update failed:', err);
         return res.status(500).json({ message: 'Error verifying email' });
       }
 
+      console.log('Email verified successfully for:', decoded.email);
       res.json({ message: 'Email verified successfully' });
     });
   });
 };
+
 
 module.exports = { registerUser, loginUser, verifyEmail };

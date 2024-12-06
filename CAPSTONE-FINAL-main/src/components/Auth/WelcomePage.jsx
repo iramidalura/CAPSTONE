@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import backgroundImage from '../assets/doctor.jpg';
+import backgroundImage from '../../assets/doctor.jpg';
 import { useNavigate } from 'react-router-dom';
 
 const WelcomePage = () => {

@@ -3,21 +3,23 @@ import { Link } from 'react-router-dom';
 import { LuMessageSquare } from 'react-icons/lu';
 import { IoIosNotificationsOutline } from 'react-icons/io';
 import { FaNotesMedical, FaRegCalendarAlt, FaUser, FaUserCircle } from 'react-icons/fa';
-import logo from '../assets/kiddie.png';
+import logo from '../../assets/kiddie.png';
 
-const Sidebar = () => {
+const GuardianSidebar = () => {
     const [activeLink, setActiveLink] = useState(0);
-    const handleLinkClick = (index) => {
-        setActiveLink(index)
-    }
+
   const SIDEBAR_LINKS = [
-    { id: 1, path: "/dashboard", name: "Dashboard", icon: FaNotesMedical },
-    { id: 2, path: "/appointments", name: "Appointment", icon: FaRegCalendarAlt },
-    { id: 3, path: "/patients", name: "Patients", icon: FaUser },
-    { id: 4, path: "/chat", name: "Chat", icon: LuMessageSquare },
-    { id: 5, path: "/notifications", name: "Notifications", icon: IoIosNotificationsOutline },
-    { id: 6, path: "/profile", name: "Profile", icon: FaUserCircle },
+    { id: 1, path: "/guardian/dashboard", name: "Dashboard", icon: FaNotesMedical },
+    { id: 2, path: "/guardian/appointments", name: "Appointment", icon: FaRegCalendarAlt },
+    { id: 3, path: "/guardian/patients", name: "Patients", icon: FaUser },
+    { id: 4, path: "/guardian/chat", name: "Chat", icon: LuMessageSquare },
+    { id: 5, path: "/guardian/notifications", name: "Notifications", icon: IoIosNotificationsOutline },
+    { id: 6, path: "/guardian/profile", name: "Profile", icon: FaUserCircle },
   ];
+
+  const handleLinkClick = (id) => {
+    setActiveLink(id);
+  }
 
   return (
     <div className="w-16 md:w-56 fixed left-0 top-0 z-10 h-screen border-r pt-8 px-4 bg-green-800 ">
@@ -53,4 +55,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default GuardianSidebar;

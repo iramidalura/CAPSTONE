@@ -3,13 +3,13 @@ const db = require('../config/db');
 
 const createUser = (userData, callback) => {
   const sql = `
-    INSERT INTO users (fullname, username, email, contact, password, userType)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (firstname, middlename, lastname, extension, email, contact, password, userType)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.execute(
     sql,
-    [userData.fullname, userData.username, userData.email, userData.contact, userData.password, userData.userType],
+    [userData.firstname, userData.middlename, userData.lastname, userData.extension, userData.email, userData.contact, userData.password, userData.userType],
     (err, result) => {
       if (err) {
         console.error('Error executing createUser query:', err);
@@ -50,21 +50,41 @@ const createPatient = (patientData, callback) => {
 };
 
 const updateEmailVerification = (email, callback) => {
-    const sql = `UPDATE users SET emailVerified = true WHERE email = ?`;
-  
-    db.execute(sql, [email], callback);
-  };
-  
-  const findUserByEmail = (email, callback) => {
-    const sql = `SELECT * FROM users WHERE email = ?`;
-  
-    db.execute(sql, [email], (err, result) => {
-      if (err || result.length === 0) {
-        return callback(err, null);
-      }
-  
-      callback(null, result[0]);
-    });
-  };
-  
+  const sql = `UPDATE users SET emailVerified = true WHERE email = ?`;
+
+  db.execute(sql, [email], (err, result) => {
+    if (err) {
+      console.error(`Error updating email verification for email ${email}:`, err);
+      return callback(err, null);
+    }
+
+    if (result.affectedRows === 0) {
+      console.warn(`No user found with email: ${email}`);
+      return callback(null, { message: 'No user found with the provided email' });
+    }
+
+    console.log(`Email verification updated successfully for ${email}`);
+    callback(null, result);
+  });
+};
+
+const findUserByEmail = (email, callback) => {
+  const sql = `SELECT * FROM users WHERE email = ?`;
+
+  db.execute(sql, [email], (err, result) => {
+    if (err) {
+      console.error(`Error finding user with email ${email}:`, err);
+      return callback(err, null);
+    }
+
+    if (result.length === 0) {
+      console.warn(`No user found with email: ${email}`);
+      return callback(null, null);
+    }
+
+    console.log(`User found with email: ${email}`);
+    callback(null, result[0]);
+  });
+};
+
   module.exports = { createUser, createPatient, updateEmailVerification, findUserByEmail };

@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; // Import Link for navigation
-import logo from '../assets/kiddie.png';
-import doctorImage from '../assets/doctor.jpg';
+import logo from '../../assets/doctor.jpg';
+import doctorImage from '../../assets/doctor.jpg';
 import axios from 'axios';
 
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullname: '',
-    username: '',
+    lastname: '',
+    firstname: '',
+    middlename: '',
+    extension: '',
     email: '',
     contact: '',
     password: '',
@@ -37,7 +39,7 @@ const RegistrationPage = () => {
       medicalHistory: '',
   });
 
-  const [showPatientFrom, setShowPatientForm] = useState (false);
+  const [showPatientForm, setShowPatientForm] = useState (false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,10 +72,40 @@ const RegistrationPage = () => {
       return;
     }
 
+    if (formData.userType === 'Guardian') {
+      const requiredFields = [
+        'patientName',
+        'patientAge',
+        'birthdate',
+        'sex',
+        'birthplace',
+        'religion',
+        'fatherName',
+        'fatherAge',
+        'fatherOccupation',
+        'motherName',
+        'motherAge',
+        'motherOccupation',
+        'cellphone',
+        'patientEmail',
+        'informant',
+        'address',
+        'relation',
+        'medicalHistory',
+      ];
+  
+      for (const field of requiredFields) {
+        if (!patientDetails[field]) {
+          alert(`Please fill in all required fields for patient information: ${field}`);
+          return;
+        }
+      }
+    }
+
     try {
       const userData = {
         ...formData,
-        patientInfo: showPatientFrom ? patientDetails : null,
+        patientInfo: showPatientForm ? patientDetails : null,
       }
       console.log("Form data being sent:", userData);
       const response = await axios.post('http://localhost:5000/api/register', userData);
@@ -90,127 +122,165 @@ const RegistrationPage = () => {
 
   return (
     <div
-      className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center backdrop-blur-lg overflow-y-auto"
+      className="flex items-center justify-center min-h-screen bg-cover bg-center overflow-y-auto px-6 py-10"
       style={{ backgroundImage: `url(${doctorImage})` }}
     >
-      {/* Logo at the top-left corner with responsive sizing */}
-      <div className="absolute top-0 left-0 p-4">
-        <img
-          src={logo}
-          alt="logo"
-          className="w-32 h-28 md:w-44 md:h-40 lg:w-56 lg:h-52 object-contain"
-        />
-      </div>
+      {/* Registration Form Container */}
+      <div className="flex flex-row w-[90%] max-w-6xl p-8 bg-white border-2 border-gray-900 rounded-lg shadow-lg space-x-8">
+        {/* Left Side: Intro and Navigation */}
+        <div className="hidden lg:flex flex-col justify-center items-start w-1/3 bg-gray-100 p-6 rounded-lg">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Welcome!</h2>
+          <p className="text-gray-700 mb-8">
+            Fill out the form to create your account and access our features.
+          </p>
+          <img
+            src={logo}
+            alt="welcome illustration"
+            className="h-96 w-full object-cover rounded-lg"
+          />
+        </div>
 
-      {/* Centered Registration Form */}
-      <div className="relative flex flex-col items-center w-full max-w-lg p-6 bg-white border-2 border-gray-900 rounded-lg shadow-lg mt-20 lg:mt-20">
-        <h1 className="text-2xl font-bold text-center mb-4">Create an Account!</h1>
+        {/* Right Side: Form */}
+        <div className="flex flex-col w-full lg:w-2/3">
+          <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
+            Create an Account!
+          </h1>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* First Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1">First Name</label>
+                <input
+                  type="text"
+                  name="firstname"
+                  placeholder="First Name"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Middle Name</label>
+                <input
+                  type="text"
+                  name="middlename"
+                  placeholder="Middle Name"
+                  value={formData.middlename}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+            </div>
 
-        {/* Registration Form */}
-        <form onSubmit={handleSubmit}>
-          {/* First Row: Fullname, Email, and Contact Number */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
-            <div className="md:col-span-2">
-              <label className="w-full text-left text-sm font-semibold mb-1">Fullname (Lastname, Firstname, Middle Initial)</label>
-              <input
-                type="text"
-                name="fullname"
-                placeholder="(Lastname, Firstname, Middle Initial)"
-                value={formData.fullname}
-                onChange={handleChange}
-                className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
+            {/* Second Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1">Last Name</label>
+                <input
+                  type="text"
+                  name="lastname"
+                  placeholder="Last Name"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Name Extension</label>
+                <input
+                  type="text"
+                  name="extension"
+                  placeholder="Name Extension (e.g. Jr.)"
+                  value={formData.extension}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
             </div>
-            <div className="md:col-span-2">
-              <label className="w-full text-left text-sm font-semibold mb-1">Username</label>
-              <input
-                type="text"
-                name="username"
-                placeholder="Username"
-                value={formData.username}
-                onChange={handleChange}
-                className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
+            
+            {/* Third Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Contact Number</label>
+                <input
+                  type="tel"
+                  name="contact"
+                  placeholder="Contact Number"
+                  value={formData.contact}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
             </div>
-            <div className="md:col-span-2">
-              <label className="w-full text-left text-sm font-semibold mb-1">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="w-full text-left text-sm font-semibold mb-1">Contact Number</label>
-              <input
-                type="tel"
-                name="contact"
-                placeholder="Contact Number"
-                value={formData.contact}
-                onChange={handleChange}
-                className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
-          </div>
 
-          {/* Second Row: Password and Confirm Password */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
+            {/* Password Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                  minLength={8}
+                  maxLength={12}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                  minLength={8}
+                  maxLength={12}
+                />
+              </div>
+            </div>
+
+            {/* User Type */}
             <div>
-              <label className="w-full text-left text-sm font-semibold mb-1">Password</label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
+              <label className="block text-sm font-semibold mb-1">User Type</label>
+              <select
+                name="userType"
                 className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={formData.userType}
+                onChange={handleUserTypeChange}
                 required
-                minLength={8}
-                maxLength={12}
-              />
+              >
+                <option value="">Select User Type</option>
+                <option value="Admin">Admin</option>
+                <option value="Pediatrician">Pediatrician</option>
+                <option value="Guardian">Guardian</option>
+              </select>
             </div>
-            <div>
-              <label className="w-full text-left text-sm font-semibold mb-1">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-                minLength={8}
-                maxLength={12}
-              />
-            </div>
-          </div>
 
-          {/* User Type Field */}
-          <div className="mb-4 w-full">
-            <label className="w-full text-left text-sm font-semibold mb-1">User Type</label>
-            <select
-              name="userType"
-              className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={formData.userType}
-              onChange={handleUserTypeChange}
-              required
-            >
-              <option value="" >Select User Type</option>
-              <option value="Admin">Admin</option>
-              <option value="Pediatrician">Pediatrician</option>
-              <option value="Guardian">Guardian</option>
-            </select>
-          </div>
-
-          {/* Conditionally Rendered Patient Registration Form */}
-          {showPatientFrom && (
+            {/* Conditional Patient Form */}
+            {showPatientForm && (
             <div className="mt-4 w-full">
               <h2 className="text-xl font-bold text-center mb-2">Register Patient </h2>
               <div className="mb-4">
@@ -436,23 +506,24 @@ const RegistrationPage = () => {
             </div>
           )}
 
-          {/* Sign Up Button */}
-          <button
-            type="submit"
-            className="w-full py-2 text-white bg-[#1ED754] rounded-full text-xl font-semibold hover:bg-green-600"
-          >
-            Sign Up
-          </button>
-        </form>
+            {/* Sign Up Button */}
+            <button
+              type="submit"
+              className="w-full py-3 text-white bg-green-500 rounded-full text-lg font-semibold hover:bg-green-600"
+            >
+              Sign Up
+            </button>
+          </form>
 
-        {/* Already have an account? Login link */}
-        <div className="mt-4 text-center">
-          <p className="text-sm">
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 font-semibold hover:underline">
-              Proceed to Login
-            </Link>
-          </p>
+          {/* Already Registered */}
+          <div className="mt-4 text-center">
+            <p className="text-sm">
+              Already have an account?{' '}
+              <Link to="/login" className="text-blue-600 font-semibold hover:underline">
+                Proceed to Login
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

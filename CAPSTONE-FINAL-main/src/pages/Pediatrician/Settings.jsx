@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import profileImage from '../assets/kiddie.png';
+import profileImage from '../../assets/kiddie.png';
 
 const Settings = () => {
   const [isEditing, setIsEditing] = useState(false);

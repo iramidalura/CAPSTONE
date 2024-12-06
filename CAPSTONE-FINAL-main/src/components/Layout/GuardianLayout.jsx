@@ -1,11 +1,11 @@
 import React from 'react'
-import Sidebar from './Sidebar';
 import { Outlet } from 'react-router-dom';
+import GuardianSidebar from '../Sidebar/GuardianSidebar';
 
-const Layout = () => {
+const GuardianLayout = () => {
   return <div>
     <div className="flex">
-        <Sidebar />
+        <GuardianSidebar />
         <div className="w-full ml-16 md:ml-56">
             <Outlet />
         </div>
@@ -14,4 +14,4 @@ const Layout = () => {
   
 };
 
-export default Layout
+export default GuardianLayout;
