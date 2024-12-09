@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // To make API requests
 import 'flowbite'; // Import Flowbite components
 import doctorImage from "../../assets/doctor.jpg";
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -12,36 +13,45 @@ const LoginPage = () => {
 
   // Handle form submission for login
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError(''); // Reset error message
+  e.preventDefault();
+  setError('');
 
-    console.log({ email, password });
+  try {
+    const response = await axios.post('http://localhost:5000/api/login', { email, password });
+    const { token, userType } = response.data;
 
-    try {
-      // Send login request to the backend
-      const response = await axios.post('http://localhost:5000/api/login', { email, password });
-      const { token, userType } = response.data;
-
-
-
-      // Check if response has token
+    if (token) {
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+    
+      console.log('Decoded token:', decoded);
+    
+      // Check if token is expired
+      if (decoded.exp < currentTime) {
+        console.log('Token expired. Please login again.');
+      } else {
+        console.log('Token is valid.');
+      }
+    
+      // Save the token
       localStorage.setItem('token', token);
+      console.log('Token saved to localStorage:', localStorage.getItem('token'));
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       if (userType === 'Guardian') {
-        navigate('/guardian/dashboard');
+        navigate('/guardian/request-appointment');
       } else if (userType === 'Pediatrician') {
         navigate('/pediatrician/dashboard');
       }
-
-    } catch (err) {
-      // Handle errors based on the backend response
-      if (err.response && err.response.status === 403) {
-        setError('Your email is not verified. Please verify your email and try again.');
-      } else {
-        setError('Invalid login credentials.');
-      }
     }
-  };
+  } catch (err) {
+    if (err.response && err.response.status === 403) {
+      setError('Your email is not verified. Please verify your email and try again.');
+    } else {
+      setError('Invalid login credentials.');
+    }
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-200 via-gray-200 to-gray-300 backdrop-blur-lg p-6">

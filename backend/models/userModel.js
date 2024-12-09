@@ -1,15 +1,16 @@
 // models/userModel.js
 const db = require('../config/db');
 
+// Insert into the users table
 const createUser = (userData, callback) => {
   const sql = `
-    INSERT INTO users (firstname, middlename, lastname, extension, email, contact, password, userType)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (email, password, userType, emailVerified)
+    VALUES (?, ?, ?, ?)
   `;
 
   db.execute(
     sql,
-    [userData.firstname, userData.middlename, userData.lastname, userData.extension, userData.email, userData.contact, userData.password, userData.userType],
+    [userData.email, userData.password, userData.userType, userData.emailVerified || false],
     (err, result) => {
       if (err) {
         console.error('Error executing createUser query:', err);
@@ -20,13 +21,37 @@ const createUser = (userData, callback) => {
   );
 };
 
-const createPatient = (patientData, callback) => {
+// Insert into the guardians table
+const createGuardian = (guardianData, callback) => {
   const sql = `
-    INSERT INTO patients (guardian_id, patientName, patientAge, birthdate, sex, birthplace, religion, address, fatherName, fatherAge, fatherOccupation, motherName, motherAge, motherOccupation, cellphone, patientEmail, informant, relation, medicalHistory)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO guardians (user_id, firstname, middlename, lastname, extension, contact)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
 
-  console.log("SQL Query to Insert Patient:", sql);
+  db.execute(
+    sql,
+    [
+      guardianData.userId, guardianData.firstname, guardianData.middlename,
+      guardianData.lastname, guardianData.extension, guardianData.contact,
+    ],
+    (err, result) => {
+      if (err) {
+        console.error('Error executing createGuardian query:', err);
+        return callback(err);
+      }
+      callback(null, result);
+    }
+  );
+};
+
+// Insert into the patients table
+const createPatient = (patientData, callback) => {
+  const sql = `
+    INSERT INTO patients (guardian_id, patientName, patientAge, birthdate, sex, birthplace, religion, address,
+                          fatherName, fatherAge, fatherOccupation, motherName, motherAge, motherOccupation,
+                          cellphone, patientEmail, informant, relation, medicalHistory)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
   db.execute(
     sql,
@@ -43,11 +68,11 @@ const createPatient = (patientData, callback) => {
         console.error('Error executing createPatient query:', err);
         return callback(err);
       }
-      console.log('Patient inserted with ID:', result.insertId);
       callback(null, result);
     }
   );
 };
+
 
 const updateEmailVerification = (email, callback) => {
   const sql = `UPDATE users SET emailVerified = true WHERE email = ?`;
@@ -87,4 +112,4 @@ const findUserByEmail = (email, callback) => {
   });
 };
 
-  module.exports = { createUser, createPatient, updateEmailVerification, findUserByEmail };
+  module.exports = { createUser, createGuardian, createPatient, updateEmailVerification, findUserByEmail };

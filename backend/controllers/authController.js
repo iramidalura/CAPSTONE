@@ -1,44 +1,48 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const db = require('../config/db');
 
 // Register a new user
 const registerUser = (req, res) => {
-  const { firstname, middlename, lastname, extension, email, contact, password, userType, patientInfo } = req.body;
-  console.log("Received data:", req.body);
-  
-  console.log("Registering user:", req.body); // <-- Add this log
-  
+  const { email, password, userType, firstname, middlename, lastname, extension, contact, patientInfo } = req.body;
+
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({ message: 'Error hashing password' });
     }
-    
-    User.createUser({ firstname, middlename, lastname, email, extension, contact, password: hashedPassword, userType }, (error, result) => {
+
+    User.createUser({ email, password: hashedPassword, userType }, (error, result) => {
       if (error) {
         return res.status(500).json({ message: 'Database error', error });
       }
 
-      const guardianId = result.insertId;
-      
-      console.log("User created with ID:", guardianId); // <-- Log guardianId
-      
+      const userId = result.insertId;
 
-      if (userType === 'Guardian' && patientInfo) {
-        const patientData = { ...patientInfo, guardianId };
-        console.log("Registering patient:", patientData); // <-- Add this log
-        
-        User.createPatient(patientData, (err) => {
+      if (userType === 'Guardian') {
+        const guardianData = { userId, firstname, middlename, lastname, extension, contact };
+        User.createGuardian(guardianData, (err, guardianResult) => {
           if (err) {
-            console.error("Error creating patient:", err);
-            return res.status(500).json({ message: 'Error creating patient', err });
+            return res.status(500).json({ message: 'Error creating guardian', err });
           }
-          res.status(201).json({ message: 'Guardian and patient registered successfully' });
+
+          const guardianId = guardianResult.insertId;
+
+          if (patientInfo) {
+            const patientData = { ...patientInfo, guardianId };
+            User.createPatient(patientData, (err) => {
+              if (err) {
+                return res.status(500).json({ message: 'Error creating patient', err });
+              }
+              res.status(201).json({ message: 'Guardian and patient registered successfully' });
+            });
+          } else {
+            res.status(201).json({ message: 'Guardian registered successfully' });
+          }
         });
       } else {
         res.status(201).json({ message: 'User registered successfully' });
       }
-
       sendVerificationEmail(email);
     });
   });
@@ -68,11 +72,12 @@ const loginUser = (req, res) => {
       const token = jwt.sign({ 
         id: user.id, 
         email: user.email, 
-        guardianId: user.guardianId,
         userType: user.userType 
       }, 
       process.env.JWT_SECRET, 
       { expiresIn: '1h' });
+
+      
 
       res.json({ 
         message: 'Login successful', 
@@ -82,6 +87,59 @@ const loginUser = (req, res) => {
     });
   });
 };
+
+// Endpoint to fetch guardian and patient data by email
+const getGuardianAndPatientData = (req, res) => {
+  const { email } = req.user;
+
+  // Find the user by email
+  User.findUserByEmail(email, (err, user) => {
+    if (err || !user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.userType !== 'Guardian') {
+      return res.status(403).json({ message: 'Access restricted to guardians only' });
+    }
+
+    console.log('User ID:', user.id); // Debug log
+
+    // Find the guardian's data
+    const sqlGuardian = `
+    SELECT g.id, u.email, g.firstname, g.middlename, g.lastname, g.extension, g.contact
+    FROM guardians g
+    JOIN users u ON g.user_id = u.id
+    WHERE g.user_id = ?
+  `;
+    db.execute(sqlGuardian, [user.id], (err, guardians) => {
+      if (err || guardians.length === 0) {
+        console.error('Error fetching guardian data:', err); // Debug log
+        return res.status(404).json({ message: 'Guardian data not found' });
+      }
+
+      const guardian = guardians[0];
+      console.log('Fetched guardian data:', guardian);
+      console.log('Guardian ID:', guardian.id);
+      console.log('Guardian User ID:', guardian.user_id);
+
+      // Find all patients under this guardian
+      const sqlPatients = `SELECT * FROM patients WHERE guardian_id = ?`;
+      db.execute(sqlPatients, [guardian.id], (err, patients) => {
+        if (err) {
+          console.error('Error fetching patients data:', err);
+          return res.status(500).json({ message: 'Error fetching patients data', err });
+        }
+
+        res.json({
+          user,
+          guardian,
+          patients: patients || [], // Return an empty array if no patients found
+        });
+      });
+    });
+  });
+};
+
 
 // Function to send verification email
 const sendVerificationEmail = (email) => {
@@ -139,4 +197,4 @@ const verifyEmail = (req, res) => {
 };
 
 
-module.exports = { registerUser, loginUser, verifyEmail };
+module.exports = { registerUser, loginUser, getGuardianAndPatientData, verifyEmail };

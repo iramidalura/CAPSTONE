@@ -39,7 +39,7 @@ const RegistrationPage = () => {
       medicalHistory: '',
   });
 
-  const [showPatientForm, setShowPatientForm] = useState (false);
+  const [showPatientForm, setShowPatientForm] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,16 +48,14 @@ const RegistrationPage = () => {
 
   const handlePatientChange = (e) => {
     const { name, value } = e.target;
-    console.log("Updating field:", name, "with value:", value);
-    setPatientDetails({ ...patientDetails, [name]: value});
+    setPatientDetails({ ...patientDetails, [name]: value });
   };
 
   const handleUserTypeChange = (e) => {
     const selectedUserType = e.target.value;
-    console.log("User type changed:", e.target.value);
     setFormData({ ...formData, userType: selectedUserType });
 
-    if(selectedUserType  == 'Guardian') {
+    if(selectedUserType === 'Guardian') {
       setShowPatientForm(true);
     } else {
       setShowPatientForm(false);
@@ -67,33 +65,21 @@ const RegistrationPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Password validation
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
 
+    // Patient details validation for Guardian
     if (formData.userType === 'Guardian') {
       const requiredFields = [
-        'patientName',
-        'patientAge',
-        'birthdate',
-        'sex',
-        'birthplace',
-        'religion',
-        'fatherName',
-        'fatherAge',
-        'fatherOccupation',
-        'motherName',
-        'motherAge',
-        'motherOccupation',
-        'cellphone',
-        'patientEmail',
-        'informant',
-        'address',
-        'relation',
-        'medicalHistory',
+        'patientName', 'patientAge', 'birthdate', 'sex', 'birthplace', 'religion',
+        'fatherName', 'fatherAge', 'fatherOccupation', 'motherName', 'motherAge',
+        'motherOccupation', 'cellphone', 'patientEmail', 'informant', 'address', 
+        'relation', 'medicalHistory'
       ];
-  
+
       for (const field of requiredFields) {
         if (!patientDetails[field]) {
           alert(`Please fill in all required fields for patient information: ${field}`);
@@ -102,21 +88,58 @@ const RegistrationPage = () => {
       }
     }
 
+    // Prepare the data to send
+    const userData = {
+      ...formData,
+      patientInfo: showPatientForm ? patientDetails : null,
+    };
+
     try {
-      const userData = {
-        ...formData,
-        patientInfo: showPatientForm ? patientDetails : null,
-      }
-      console.log("Form data being sent:", userData);
+      // Assuming your backend is running on localhost:5000
       const response = await axios.post('http://localhost:5000/api/register', userData);
-      console.log("Form data being sent:", userData);
+
       if (response.status === 201) {
         alert('Registration successful');
+        setFormData({
+          lastname: '',
+          firstname: '',
+          middlename: '',
+          extension: '',
+          email: '',
+          contact: '',
+          password: '',
+          confirmPassword: '',
+          userType: '',
+        });
+        setPatientDetails({
+          patientName: '',
+          patientAge: '',
+          birthdate: '',
+          sex: '',
+          birthplace: '',
+          religion: '',
+          address: '',
+          fatherName: '',
+          fatherAge: '',
+          fatherOccupation: '',
+          motherName: '',
+          motherAge: '',
+          motherOccupation: '',
+          cellphone: '',
+          patientEmail: '',
+          informant: '',
+          relation: '',
+          medicalHistory: '',
+        });
         navigate('/login');
       }
     } catch (error) {
       console.error('Error during registration:', error);
-      alert('Registration failed. Please try again.');
+      if (error.response) {
+        alert(`Registration failed: ${error.response.data.message}`);
+      } else {
+        alert('Registration failed. Please try again.');
+      }
     }
   };
 

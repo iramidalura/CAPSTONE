@@ -9,7 +9,11 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors()); // Enable CORS
-app.use(express.json()); // Use built-in JSON body parser from Express
+app.use(express.json({
+  origin: 'http://localhost:5173', // Allow only the frontend's origin
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+})); // Use built-in JSON body parser from Express
 
 // API Routes
 app.use('/api', authRoutes);
