@@ -3,35 +3,46 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Calendar from "react-calendar"; // Import the react-calendar component
 import "react-calendar/dist/Calendar.css"; // Import calendar styles
+import "../../Available.css";
+import moment from "moment-timezone";
 
 const PediatricianDashboard = () => {
   const [appointments, setAppointments] = useState([]);
+  const [markedDates, setMarkedDates] = useState({});
   const [date, setDate] = useState(new Date()); // State to manage selected date on the calendar
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/appointments"
-        );
+        // Fetch appointments
+        const response = await axios.get("http://localhost:5000/api/appointments");
         console.log("Fetched appointments:", response.data);
+
         const upcomingAppointments = response.data.filter((appointment) => {
           const appointmentDate = new Date(appointment.date);
-          const localAppointmentDate = new Date(
-            appointmentDate.toLocaleString()
-          );
+          const localAppointmentDate = new Date(appointmentDate.toLocaleString());
           localAppointmentDate.setHours(0, 0, 0, 0);
 
           const currentDate = new Date();
           currentDate.setHours(0, 0, 0, 0);
 
-          console.log("Appointment Date:", new Date(appointmentDate));
-          console.log("Current Date:", new Date(currentDate));
-
           return localAppointmentDate >= currentDate;
         });
         setAppointments(upcomingAppointments);
+
+        // Fetch marked dates (availability)
+        const markedResponse = await axios.get("http://localhost:5000/api/marked-dates", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        const availableDates = markedResponse.data;
+        const formattedMarkedDates = Object.keys(availableDates).reduce((acc, date) => {
+          acc[date] = availableDates[date]; // Use the status directly (e.g., "available" or "not_available")
+          return acc;
+        }, {});
+
+        setMarkedDates(formattedMarkedDates);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
@@ -55,6 +66,18 @@ const PediatricianDashboard = () => {
     );
   });
 
+  // Assign CSS classes to calendar tiles based on markedDates
+  const tileClassName = ({ date, view }) => {
+    if (view === "month") {
+      const formattedDate = moment(date).format("YYYY-MM-DD");
+      if (markedDates[formattedDate]?.status === "available") {
+        return "available"; // Green class
+      } else if (markedDates[formattedDate]?.status === "not_available") {
+        return "not-available"; // Red class
+      }
+    }
+    return null;
+  };
   return (
     <main className="flex-1 bg-green-100 p-10">
       <h1 className="text-2xl font-bold mb-6 text-green-900">
@@ -111,17 +134,17 @@ const PediatricianDashboard = () => {
         {/* Make "Calendar" clickable */}
         <h2
           className="text-2xl font-bold text-green-900 mb-4 text-center w-full cursor-pointer"
-          onClick={() => navigate('/pediatrician/calendar')} // Navigate to Calendar page when clicked
+          onClick={() => navigate("/pediatrician/calendar")} // Navigate to Calendar page when clicked
         >
           Calendar
         </h2>
         <div className="w-full max-w-[500px]">
-          {" "}
           {/* Adjust max-width to resize calendar */}
           <Calendar
             onChange={handleDateChange}
             value={date}
             className="react-calendar w-full h-full" // Ensure calendar fills its container
+            tileClassName={tileClassName} // Use tileClassName to mark available/not available dates
           />
         </div>
       </div>

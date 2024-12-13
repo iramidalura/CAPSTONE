@@ -17,9 +17,10 @@ const verifyRole = (requiredRoles) => {
       if (err) {
         return res.status(401).json({ message: 'Invalid token' });
       }
-
+      console.log("Decoded token:", decoded);
       // Check if the user's role is in the list of required roles
       if (!requiredRoles.includes(decoded.userType)) {
+        console.log("Access denied for userType:", decoded.userType); // Debug log
         return res.status(403).json({ message: 'Access denied' });
       }
 

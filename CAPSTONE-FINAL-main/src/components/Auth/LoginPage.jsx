@@ -35,11 +35,16 @@ const LoginPage = () => {
     
       // Save the token
       localStorage.setItem('token', token);
+      localStorage.setItem('email', email);
       console.log('Token saved to localStorage:', localStorage.getItem('token'));
+      console.log('Email saved to localStorage:', localStorage.getItem('email'));
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       if (userType === 'Guardian') {
         navigate('/guardian/request-appointment');
+      } else if (userType === 'Admin') {
+        navigate('/admin/dashboard');
       } else if (userType === 'Pediatrician') {
         navigate('/pediatrician/dashboard');
       }

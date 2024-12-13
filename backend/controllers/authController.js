@@ -40,9 +40,18 @@ const registerUser = (req, res) => {
             res.status(201).json({ message: 'Guardian registered successfully' });
           }
         });
+      } else if (userType === 'Pediatrician') {
+        const pediatricianData = { userId, firstname, middlename, lastname, extension, contact };
+        User.createPediatrician(pediatricianData, (err) => {
+          if (err) {
+            return res.status(500).json({ message: 'Error creating pediatrician', err });
+          }
+          res.status(201).json({ message: 'Pediatrician registered successfully' });
+        });
       } else {
         res.status(201).json({ message: 'User registered successfully' });
       }
+
       sendVerificationEmail(email);
     });
   });
@@ -108,7 +117,7 @@ const getGuardianAndPatientData = (req, res) => {
     const sqlGuardian = `
     SELECT g.id, u.email, g.firstname, g.middlename, g.lastname, g.extension, g.contact
     FROM guardians g
-    JOIN users u ON g.user_id = u.id
+    JOIN users u ON g.id = u.id
     WHERE g.user_id = ?
   `;
     db.execute(sqlGuardian, [user.id], (err, guardians) => {
@@ -120,7 +129,6 @@ const getGuardianAndPatientData = (req, res) => {
       const guardian = guardians[0];
       console.log('Fetched guardian data:', guardian);
       console.log('Guardian ID:', guardian.id);
-      console.log('Guardian User ID:', guardian.user_id);
 
       // Find all patients under this guardian
       const sqlPatients = `SELECT * FROM patients WHERE guardian_id = ?`;

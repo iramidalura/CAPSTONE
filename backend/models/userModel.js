@@ -21,6 +21,32 @@ const createUser = (userData, callback) => {
   );
 };
 
+const createPediatrician = (pediatricianData, callback) => {
+  const sql = `
+    INSERT INTO pediatricians (user_id, firstname, middlename, lastname, extension, contact)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.execute(
+    sql,
+    [
+      pediatricianData.userId,
+      pediatricianData.firstname,
+      pediatricianData.middlename,
+      pediatricianData.lastname,
+      pediatricianData.extension,
+      pediatricianData.contact,
+    ],
+    (err, result) => {
+      if (err) {
+        console.error('Error executing createPediatrician query:', err);
+        return callback(err);
+      }
+      callback(null, result);
+    }
+  );
+};
+
 // Insert into the guardians table
 const createGuardian = (guardianData, callback) => {
   const sql = `
@@ -112,4 +138,4 @@ const findUserByEmail = (email, callback) => {
   });
 };
 
-  module.exports = { createUser, createGuardian, createPatient, updateEmailVerification, findUserByEmail };
+  module.exports = { createUser, createPediatrician, createGuardian, createPatient, updateEmailVerification, findUserByEmail };

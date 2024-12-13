@@ -6,32 +6,35 @@ import { jwtDecode } from 'jwt-decode';
 
 const GuardianRequestAppointment = () => {
   const navigate = useNavigate();
+  const [availableDates, setAvailableDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [availableTimes, setAvailableTimes] = useState([]);
   const [formData, setFormData] = useState({
-    guardian: {
-      firstname: '',
-      middlename: '',
-      lastname: '',
-      email: '',
-    },
-    patient: {
-      id: '', // Initialize patient ID as an empty string
-      patientName: '',
-      patientAge: '',
-      birthdate: '',
-      sex: '',
-      birthplace: '',
-      religion: '',
-      address: '',
-      fatherName: '',
-      fatherAge: '',
-      fatherOccupation: '',
-      motherName: '',
-      motherAge: '',
-      motherOccupation: '',
-      cellphone: '',
-      informant: '',
-      relation: '',
-    },
+      guardian: {
+        firstname: '',
+        middlename: '',
+        lastname: '',
+        email: '',
+      },
+      patient: {
+        id: '', // Initialize patient ID as an empty string
+        patientName: '',
+        patientAge: '',
+        birthdate: '',
+        sex: '',
+        birthplace: '',
+        religion: '',
+        address: '',
+        fatherName: '',
+        fatherAge: '',
+        fatherOccupation: '',
+        motherName: '',
+        motherAge: '',
+        motherOccupation: '',
+        cellphone: '',
+        informant: '',
+        relation: '',
+      },
     appointment: {
       date: '',
       time: '',
@@ -51,6 +54,7 @@ const GuardianRequestAppointment = () => {
 
         const decoded = jwtDecode(token);
         const userEmail = decoded.email;
+        
 
         const response = await axios.get(
           `http://localhost:5000/api/guardian-patient/${userEmail}`,
@@ -61,12 +65,7 @@ const GuardianRequestAppointment = () => {
 
         setFormData((prevFormData) => ({
           ...prevFormData,
-          guardian: response.data.guardian || {
-            firstname: '',
-            middlename: '',
-            lastname: '',
-            email: '',
-          },
+          guardian: { ...response.data.guardian, user_id: response.data.guardian.id },
         }));
         console.log('Response from API:', response.data);
 
@@ -79,6 +78,24 @@ const GuardianRequestAppointment = () => {
       }
     };
 
+    const token = localStorage.getItem('token');
+        if (!token) throw new Error('User not authenticated.');
+
+        const decoded = jwtDecode(token);
+
+    const fetchAvailableDates = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/marked-dates", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+  
+        setAvailableDates(response.data);
+      } catch (error) {
+        console.error('Error fetching available dates:', error);
+      }
+    };
+
+    fetchAvailableDates();
     fetchData();
   }, []);
 
@@ -88,6 +105,23 @@ const GuardianRequestAppointment = () => {
       [section]: { ...formData[section], [e.target.name]: e.target.value },
     });
   };
+
+  const handleDateChange = (e) => {
+    const selectedDate = e.target.value;
+    setSelectedDate(selectedDate);  // Update the local selectedDate state
+  
+    // Update the form data to set the selected date
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      appointment: { ...prevFormData.appointment, date: selectedDate },
+    }));
+  
+    // Fetch available time slots for the selected date
+    const dateData = availableDates[selectedDate];
+    setAvailableTimes(dateData ? dateData.timeSlots : []);
+  };
+  
+
 
   const handlePatientSelect = (e) => {
     const selectedPatientId = e.target.value;
@@ -113,6 +147,8 @@ const GuardianRequestAppointment = () => {
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      console.log(data); // Log the request payload
+
 
       setSuccess(true);
     } catch (err) {
@@ -333,7 +369,65 @@ const GuardianRequestAppointment = () => {
 
         {/* Appointment Details */}
         <h2 className="text-lg font-semibold text-green-700">Appointment Details</h2>
+        <div className="flex flex-col">
+          <label htmlFor="patientSelect" className="text-sm font-medium text-gray-700">
+            Select Date (YYYY/MM/DD)
+          </label>
+          <select
+            id="date"
+            name="date"
+            value={formData.appointment.date}
+            onChange={handleDateChange}
+            className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+          >
+            <option value="">Select a date</option>
+            {Object.keys(availableDates).map((date) => (
+              <option key={date} value={date}>
+                {date}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedDate && (
+          <div className="flex flex-col">
+          <label htmlFor="patientSelect" className="text-sm font-medium text-gray-700">
+            Select Time
+          </label>
+          <select
+            id="date"
+            name="date"
+            value={formData.appointment.time}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                appointment: { ...formData.appointment, time: e.target.value },
+              })
+            }
+            className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+          >
+            <option value="">Select a time</option>
+            {availableTimes.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+        )}
         {/* Appointment fields */}
+        <div className="flex flex-col">
+          <label htmlFor="middlename" className="text-sm font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            name="description"
+            id="description"
+            value={formData.appointment.description}
+            onChange={(e) => handleChange('appointment', e)}
+            placeholder="Description"
+            className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+          />
+        </div>
 
         {/* Submit Button */}
         <button

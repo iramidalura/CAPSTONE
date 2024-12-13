@@ -1,5 +1,4 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Patient from "./pages/Pediatrician/Patient";
 import Appointments from "./pages/Pediatrician/Appointments";
 import Calendar from "./pages/Pediatrician/Calendar";
 import RequestConsultation from "./pages/Pediatrician/RequestConsultation";
@@ -30,6 +29,15 @@ import PediatricianDashboard from "./pages/Pediatrician/PediatricianDashboard";
 import GuardianMyCalendar from "./pages/Guardian/GuardianCalendar";
 import PediatricianLayout from "./components/Layout/PediatricianLayout";
 import Consultations from "./pages/Pediatrician/Consultations";
+import GuardianPatients from "./pages/Guardian/GuardianPatients";
+import AdminLayout from "./components/Layout/AdminLayout";
+import AdminDashboard from "./pages/Admin/Dashboard";
+import AdminPrescriptions from "./pages/Admin/Prescriptions";
+import AdminPatient from "./pages/Admin/Patients";
+import AdminSettings from "./pages/Admin/Settings";
+import AdminUsers from "./pages/Admin/Users";
+import AdminProfile from "./pages/Admin/Profile";
+import AdminMyCalendar from "./pages/Admin/Calendar";
 
 function App() {
   return (
@@ -45,6 +53,7 @@ function App() {
         <Route path="/guardian" element={<GuardianLayout />}>
           <Route path="dashboard" element={<GuardianDashboard />} />
           <Route path="appointments" element={<GuardianAppointments />} />
+          <Route path="patients" element={<GuardianPatients />} />
           <Route path="chat" element={<GuardianChat />} />
           <Route path="notifications" element={<GuardianNotifications />} />
           <Route path="profile" element={<GuardianProfile />} />
@@ -70,6 +79,16 @@ function App() {
           <Route path="activity-log" element={<ActivityLog />} />
           <Route path="settings" element={<Settings />} />
           <Route path="about-us" element={<AboutUs />} />
+        </Route>
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="prescriptions" element={<AdminPrescriptions />} />
+          <Route path="patients" element={<AdminPatient />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="profile" element={<AdminProfile />} />
+          <Route path="calendar" element={<AdminMyCalendar />} />
         </Route>
 
         {/* Fallback Route */}
