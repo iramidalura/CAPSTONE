@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { IoArrowBack } from 'react-icons/io5';
 import { jwtDecode } from 'jwt-decode';
+import moment from 'moment'
 
 const GuardianRequestAppointment = () => {
   const navigate = useNavigate();
@@ -10,34 +11,34 @@ const GuardianRequestAppointment = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
   const [formData, setFormData] = useState({
-      guardian: {
-        firstname: '',
-        middlename: '',
-        lastname: '',
-        email: '',
-      },
-      patient: {
-        id: '', // Initialize patient ID as an empty string
-        patientName: '',
-        patientAge: '',
-        birthdate: '',
-        sex: '',
-        birthplace: '',
-        religion: '',
-        address: '',
-        fatherName: '',
-        fatherAge: '',
-        fatherOccupation: '',
-        motherName: '',
-        motherAge: '',
-        motherOccupation: '',
-        cellphone: '',
-        informant: '',
-        relation: '',
-      },
+    guardian: {
+      firstname: '',
+      middlename: '',
+      lastname: '',
+      email: '',
+    },
+    patient: {
+      id: '', // Initialize patient ID as an empty string
+      patientName: '',
+      patientAge: '',
+      birthdate: '',
+      sex: '',
+      birthplace: '',
+      religion: '',
+      address: '',
+      fatherName: '',
+      fatherAge: '',
+      fatherOccupation: '',
+      motherName: '',
+      motherAge: '',
+      motherOccupation: '',
+      cellphone: '',
+      informant: '',
+      relation: '',
+    },
     appointment: {
       date: '',
-      time: '',
+      time: '', // This will be a string like "start - end"
       description: '',
     },
   });
@@ -54,7 +55,6 @@ const GuardianRequestAppointment = () => {
 
         const decoded = jwtDecode(token);
         const userEmail = decoded.email;
-        
 
         const response = await axios.get(
           `http://localhost:5000/api/guardian-patient/${userEmail}`,
@@ -67,11 +67,6 @@ const GuardianRequestAppointment = () => {
           ...prevFormData,
           guardian: { ...response.data.guardian, user_id: response.data.guardian.id },
         }));
-        console.log('Response from API:', response.data);
-
-        console.log('Response:', response.data);
-
-
         setPatients(response.data.patients || []);
       } catch (err) {
         setError('Failed to fetch user data.');
@@ -79,16 +74,16 @@ const GuardianRequestAppointment = () => {
     };
 
     const token = localStorage.getItem('token');
-        if (!token) throw new Error('User not authenticated.');
+    if (!token) throw new Error('User not authenticated.');
 
-        const decoded = jwtDecode(token);
+    const decoded = jwtDecode(token);
 
     const fetchAvailableDates = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/marked-dates", {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
+
         setAvailableDates(response.data);
       } catch (error) {
         console.error('Error fetching available dates:', error);
@@ -108,20 +103,16 @@ const GuardianRequestAppointment = () => {
 
   const handleDateChange = (e) => {
     const selectedDate = e.target.value;
-    setSelectedDate(selectedDate);  // Update the local selectedDate state
-  
-    // Update the form data to set the selected date
+    setSelectedDate(selectedDate);
+
     setFormData((prevFormData) => ({
       ...prevFormData,
       appointment: { ...prevFormData.appointment, date: selectedDate },
     }));
-  
-    // Fetch available time slots for the selected date
+
     const dateData = availableDates[selectedDate];
     setAvailableTimes(dateData ? dateData.timeSlots : []);
   };
-  
-
 
   const handlePatientSelect = (e) => {
     const selectedPatientId = e.target.value;
@@ -137,26 +128,55 @@ const GuardianRequestAppointment = () => {
     setLoading(true);
     setError(null);
     setSuccess(false);
-
+  
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('User not authenticated.');
-
-      await axios.post(
-        'http://localhost:5000/api/appointments/',
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log(data); // Log the request payload
-
-
+  
+      // Ensure the time field is split into start and end times
+      const time = formData.appointment.time.split(' - ');
+      const timeStart = time[0];  // Start time (e.g., "09:00 AM")
+      const timeEnd = time[1];    // End time (e.g., "10:00 AM")
+  
+      const timeStart24hr = moment(timeStart, 'hh:mm A').format('HH:mm:ss');
+      const timeEnd24hr = moment(timeEnd, 'hh:mm A').format('HH:mm:ss');
+  
+      // Log the converted times
+      console.log('Converted Time Start:', timeStart24hr);
+      console.log('Converted Time End:', timeEnd24hr);
+  
+      if (!timeStart || !timeEnd) {
+        setError('Please select a valid time slot.');
+        setLoading(false);
+        return;
+      }
+  
+      const payload = {
+        date: formData.appointment.date,
+        timeStart: timeStart24hr,
+        timeEnd: timeEnd24hr, // Use the end variable
+        guardianId: formData.guardian.user_id,
+        patientId: parseInt(formData.patient.id, 10),
+        description: formData.appointment.description,
+      };
+  
+      console.log("Submitting payload:", payload);
+  
+      await axios.post('http://localhost:5000/api/appointments/', payload, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+  
       setSuccess(true);
     } catch (err) {
+      console.error("Submission error:", err);
       setError('Failed to request appointment. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-br from-green-50 to-green-100 relative">
@@ -263,6 +283,7 @@ const GuardianRequestAppointment = () => {
             ))}
           </select>
         </div>
+        
         <div className="flex flex-col">
           <label htmlFor="middlename" className="text-sm font-medium text-gray-700">
             Patient Name
@@ -277,6 +298,7 @@ const GuardianRequestAppointment = () => {
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
+        
         {/* Additional patient fields (populated dynamically) */}
 	<div className="flex flex-col">
           <label htmlFor="middlename" className="text-sm font-medium text-gray-700">
@@ -366,6 +388,7 @@ const GuardianRequestAppointment = () => {
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
+        
 
         {/* Appointment Details */}
         <h2 className="text-lg font-semibold text-green-700">Appointment Details</h2>

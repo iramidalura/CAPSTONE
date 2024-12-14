@@ -1,93 +1,50 @@
-const Appointment = require('../models/appointmentModel');
+const appointmentModel = require('../models/appointmentModel');
 const db = require('../config/db');
-const User = require('../models/userModel');
 
-const getAppointments = (req, res) => {
-  Appointment.getAllAppointments((err, results) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to fetch appointments' });
-    }
-    console.log('Fetched appointments from database:', results);
-    res.json(results);
-  });
-};
-
-
-
+// Request an appointment
 const requestAppointment = (req, res) => {
-  const { date, time, guardian, patient, description } = req.body;
+  const { date, timeStart, timeEnd, guardianId, patientId, description } = req.body;
+  console.log("Request body:", req.body);  // Add this to inspect the data being sent
 
-  if (!date || !time || !guardian || !patient) {
-    return res.status(400).json({ message: "Required fields are missing." });
+
+  if (!date || !timeStart || !timeEnd || !guardianId || !patientId || !description) {
+    return res.status(400).json({ message: 'All fields are required.' });
   }
+  console.log("Formatted Date:", date);  // Check if the date is correctly formatted
 
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(401).json({ message: "User not authenticated." });
-  }
 
-  const query = `
-    SELECT timeSlots FROM availability WHERE date = ?
-  `;
-  db.execute(query, [date], (err, result) => {
+  appointmentModel.createAppointment({ date, timeStart, timeEnd, guardianId, patientId, description }, (err, result) => {
     if (err) {
-      console.error("Database error:", err);
-      console.log(query)
-      return res.status(500).json({ message: "Error checking availability." });
+      return res.status(500).json({ message: 'Failed to create appointment', error: err });
     }
-
-    if (result.length === 0) {
-      return res.status(404).json({ message: "No availability for the selected date." });
-    }
-
-    const timeSlots = result[0]?.timeSlots;
-    let availableSlots;
-    try {
-      availableSlots = JSON.parse(timeSlots);
-    } catch (parseError) {
-      console.error("Error parsing timeSlots:", parseError);
-      return res.status(500).json({ message: "Invalid time slots data." });
-    }
-
-    if (!availableSlots.includes(time)) {
-      return res.status(409).json({ message: "Time slot is already booked." });
-    }
-
-    // Proceed with appointment insertion
-    const appointmentQuery = `
-      INSERT INTO appointments (
-        date, time, guardian_id, guardian_firstname, guardian_lastname, guardian_email,
-        patient_id, patient_name, description, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')
-    `;
-    const values = [
-      date,
-      time,
-      guardian.id,
-      guardian.firstname,
-      guardian.lastname,
-      guardian.email,
-      patient.id,
-      patient.patientName,
-      description || null,
-    ];
-
-    db.execute(appointmentQuery, values, (err, result) => {
-      if (err) {
-        console.error("Error inserting appointment:", err);
-        return res.status(500).json({ message: "Error creating appointment." });
-      }
-
-      res.status(201).json({ message: "Appointment requested successfully." });
-    });
+    res.status(201).json({ message: 'Appointment request submitted successfully.' });
   });
 };
 
+// Get all appointments for admin
+const getAppointmentsForAdmin = (req, res) => {
+  appointmentModel.getAppointmentsForAdmin((err, appointments) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to retrieve appointments', error: err });
+    }
+    res.json({ appointments });
+  });
+};
 
+// Update the status of an appointment
+const updateAppointmentStatus = (req, res) => {
+  const { appointmentId, status } = req.body;
 
+  if (!appointmentId || !status) {
+    return res.status(400).json({ message: 'Appointment ID and status are required.' });
+  }
 
+  appointmentModel.updateAppointmentStatus(appointmentId, status, (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to update appointment status', error: err });
+    }
+    res.json({ message: `Appointment status updated to ${status}.` });
+  });
+};
 
-
-
-
-module.exports = { getAppointments, requestAppointment };
+module.exports = { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus };

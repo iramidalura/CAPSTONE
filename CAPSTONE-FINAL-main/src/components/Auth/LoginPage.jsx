@@ -42,7 +42,7 @@ const LoginPage = () => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       if (userType === 'Guardian') {
-        navigate('/guardian/request-appointment');
+        navigate('/guardian/dashboard');
       } else if (userType === 'Admin') {
         navigate('/admin/dashboard');
       } else if (userType === 'Pediatrician') {

@@ -1,6 +1,6 @@
 const express = require('express');
 const { registerUser, loginUser, verifyEmail, getGuardianAndPatientData } = require('../controllers/authController');
-const { requestAppointment, getAppointments } = require('../controllers/appointmentController');
+const { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus } = require('../controllers/appointmentController');
 const { createConsultation } = require('../controllers/consultationController');
 const { postAvailability, getMarkedDates } = require('../controllers/availabilityController');
 const { getPatientData } = require('../controllers/patientController');
@@ -14,7 +14,7 @@ router.post('/register', registerUser);
 router.post('/login', loginUser); 
 router.get('/verify-email', verifyEmail); 
 
-router.get('/guardian/request-appointment', verifyRole(['Guardian']), (req, res) => {
+router.get('/guardian/dashboard', verifyRole(['Guardian']), (req, res) => {
     res.json({ message: 'Welcome to Guardian Dashboard' });
   });
   
@@ -23,16 +23,15 @@ router.get('/guardian/request-appointment', verifyRole(['Guardian']), (req, res)
   });
 
 router.post('/appointments', verifyRole(['Guardian']), requestAppointment);
-router.get('/appointments', getAppointments);
+router.get('/appointments-get', verifyRole(['Admin']), getAppointmentsForAdmin);
+router.put('/appointments-admin', verifyRole(['Admin']), updateAppointmentStatus);
+
 router.post('/consultations', createConsultation);
 router.post('/availability', verifyRole(['Pediatrician']), postAvailability);
 router.get('/guardian-patient/:email', verifyRole(['Guardian']), getGuardianAndPatientData);
 router.get('/patient/:email', verifyRole(['Guardian']), getPatientData);
 router.get('/user-data', verifyRole(['Pediatrician']), getUserData);
 router.get('/marked-dates', verifyRole(['Guardian', 'Pediatrician']), getMarkedDates);
-
-router.get('/admin-appointments', verifyRole('Admin'), getAppointmentRequests);
-router.post('/appointments/manage', verifyRole('Admin'), manageAppointmentRequest);
 
 
 
