@@ -67,15 +67,31 @@ const updateAppointmentStatus = (req, res) => {
 };
 
 const getAppointmentsForGuardian = (req, res) => {
-  const guardianId = req.user.id; // Get the guardianId from the JWT token
+  const userId = req.user.id; // Extract user_id from the JWT token
 
-  appointmentModel.getAppointmentsForGuardian(guardianId, (err, results) => {
+  // Fetch the guardianId corresponding to the user_id
+  appointmentModel.getGuardianId(userId, (err, guardianId) => {
     if (err) {
-      return res.status(500).json({ message: 'Failed to retrieve appointments', error: err });
+      console.error('Error fetching guardianId:', err);
+      return res.status(500).json({ message: 'Failed to retrieve guardian ID', error: err });
     }
-    res.json({ appointments: results });
+
+    if (!guardianId) {
+      return res.status(404).json({ message: 'Guardian ID not found for the user' });
+    }
+
+    // Fetch appointments using the retrieved guardianId
+    appointmentModel.getAppointmentsForGuardian(guardianId, (err, results) => {
+      if (err) {
+        console.error('Error fetching appointments:', err);
+        return res.status(500).json({ message: 'Failed to retrieve appointments', error: err });
+      }
+
+      res.json({ appointments: results });
+    });
   });
 };
+
 
 const getAppointmentDetails = (req, res) => {
   const { appointmentId } = req.params;
@@ -110,15 +126,33 @@ const deleteAppointment = (req, res) => {
 };
 
 const getUpcomingAppointmentsForGuardian = (req, res) => {
-  const guardianId = req.user.id; // Assuming this is extracted from the JWT token
+  const userId = req.user.id; // Extracted from the JWT token
 
-  appointmentModel.getUpcomingAppointmentsForGuardian(guardianId, (err, results) => {
+  console.log('User ID:', userId); // Log the user ID for debugging
+
+  // Fetch the guardianId using the userId
+  appointmentModel.getGuardianId(userId, (err, guardianId) => {
     if (err) {
-      return res.status(500).json({ message: 'Failed to retrieve appointments', error: err });
+      console.error('Error fetching guardianId:', err); // Log error
+      return res.status(500).json({ message: 'Failed to fetch guardian ID', error: err.message });
     }
-    res.json(results); // Return upcoming appointments
+
+    console.log('Guardian ID:', guardianId); // Log the fetched guardian ID
+
+    // Fetch upcoming appointments using the correct guardianId
+    appointmentModel.getUpcomingAppointmentsForGuardian(guardianId, (err, results) => {
+      if (err) {
+        console.error('Error fetching appointments:', err); // Log SQL error
+        return res.status(500).json({ message: 'Failed to retrieve appointments', error: err.message });
+      }
+
+      console.log('Appointments fetched from DB:', results); // Log the results
+
+      res.json(results); // Return upcoming appointments
+    });
   });
 };
+
 
 
 module.exports = { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus, getAppointmentsForGuardian, getAppointmentDetails,

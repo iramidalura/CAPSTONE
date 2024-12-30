@@ -26,19 +26,25 @@ const getAppointmentsForGuardian = (guardianId, callback) => {
     SELECT 
       a.id AS appointmentId,
       a.date,
-      a.timeStart,
-      a.timeEnd,
+      TIME_FORMAT(a.timeStart, '%h:%i %p') AS timeStart,
+      TIME_FORMAT(a.timeEnd, '%h:%i %p') AS timeEnd,
       a.description,
       a.status,
       CONCAT(g.firstname, ' ', g.middlename, ' ', g.lastname) AS guardianFullName,
-      CONCAT(p.patientName) AS patientFullName
+      p.patientName AS patientFullName
     FROM appointments a
     JOIN guardians g ON a.guardianId = g.id
     JOIN patients p ON a.patientId = p.id
     WHERE a.guardianId = ?
+    ORDER BY a.date ASC, a.timeStart ASC;
   `;
 
-  db.execute(sql, [guardianId], callback);
+  db.execute(sql, [guardianId], (err, results) => {
+    if (err) {
+      console.error('Error executing appointments query:', err);
+    }
+    callback(err, results);
+  });
 };
 
 const getAppointmentById = (appointmentId, callback) => {
@@ -89,7 +95,29 @@ const getUpcomingAppointmentsForGuardian = (guardianId, callback) => {
     ORDER BY a.date ASC, a.timeStart ASC;
   `;
 
-  db.execute(sql, [guardianId], callback);
+  console.log('Executing SQL Query:', sql, 'with Guardian ID:', guardianId); // Log the query and parameters
+
+  db.execute(sql, [guardianId], (err, results) => {
+    if (err) {
+      console.error('SQL Error:', err); // Log SQL error
+    }
+    callback(err, results);
+  });
+};
+
+const getGuardianId = (userId, callback) => {
+  const sql = `SELECT id FROM guardians WHERE user_id = ?`; // Map userId to guardianId
+  db.execute(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('Error fetching guardianId:', err);
+      return callback(err, null);
+    }
+    if (results.length === 0) {
+      console.warn('No guardian found for userId:', userId);
+      return callback(new Error('Guardian not found'), null);
+    }
+    callback(null, results[0].id); // Return the guardianId
+  });
 };
 
 // Update the status of an appointment
@@ -114,5 +142,5 @@ const updateAppointmentStatus = (appointmentId, status, callback) => {
 
 
 module.exports = { createAppointment, getAppointmentsForAdmin, getAppointmentsForGuardian, getAppointmentById, updateAppointmentStatus,
-  deleteAppointmentById, getUpcomingAppointmentsForGuardian
+  deleteAppointmentById, getUpcomingAppointmentsForGuardian, getGuardianId
  };

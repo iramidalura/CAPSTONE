@@ -220,7 +220,6 @@ const RegistrationPage = () => {
                   value={formData.extension}
                   onChange={handleChange}
                   className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
                 />
               </div>
             </div>

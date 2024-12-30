@@ -100,6 +100,8 @@ const loginUser = (req, res) => {
 // Endpoint to fetch guardian and patient data by email
 const getGuardianAndPatientData = (req, res) => {
   const { email } = req.user;
+  console.log('Decoded User in Middleware:', req.user);
+
 
   // Find the user by email
   User.findUserByEmail(email, (err, user) => {
@@ -117,7 +119,7 @@ const getGuardianAndPatientData = (req, res) => {
     const sqlGuardian = `
     SELECT g.id, u.email, g.firstname, g.middlename, g.lastname, g.extension, g.contact
     FROM guardians g
-    JOIN users u ON g.id = u.id
+    JOIN users u ON g.user_id = u.id
     WHERE g.user_id = ?
   `;
     db.execute(sqlGuardian, [user.id], (err, guardians) => {
