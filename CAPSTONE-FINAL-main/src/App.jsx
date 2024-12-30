@@ -38,6 +38,8 @@ import AdminSettings from "./pages/Admin/Settings";
 import AdminUsers from "./pages/Admin/Users";
 import AdminProfile from "./pages/Admin/Profile";
 import AdminMyCalendar from "./pages/Admin/Calendar";
+import GuardianViewPatient from "./pages/Guardian/GuardianViewPatient";
+import GuardianViewAppointment from "./pages/Guardian/GuardianViewAppointment";
 
 function App() {
   return (
@@ -54,12 +56,14 @@ function App() {
           <Route path="dashboard" element={<GuardianDashboard />} />
           <Route path="appointments" element={<GuardianAppointments />} />
           <Route path="patients" element={<GuardianPatients />} />
+          <Route path="/guardian/:email" element={<GuardianViewPatient />} />
           <Route path="chat" element={<GuardianChat />} />
           <Route path="notifications" element={<GuardianNotifications />} />
           <Route path="profile" element={<GuardianProfile />} />
           <Route path="calendar" element={<GuardianMyCalendar />} />
           <Route path="request-consultation" element={<GuardianRequestConsultation />} />
           <Route path="request-appointment" element={<GuardianRequestAppointment />} />
+          <Route path="/guardian/get-appointments/:appointmentId" element={<GuardianViewAppointment />} />
           <Route path="activity-log" element={<GuardianActivityLog />} />
           <Route path="settings" element={<GuardianSettings />} />
           <Route path="about-us" element={<GuardianAboutUs />} />

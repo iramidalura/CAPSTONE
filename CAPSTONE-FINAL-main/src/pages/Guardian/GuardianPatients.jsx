@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const GuardianPatients = () => {
@@ -8,6 +9,8 @@ const GuardianPatients = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOption, setSortOption] = useState('');
     const [dropdownVisible, setDropdownVisible] = useState(false);
+    const navigate = useNavigate();
+
   
     useEffect(() => {
       const fetchPatients = async () => {
@@ -139,9 +142,9 @@ const GuardianPatients = () => {
                     <td className="py-2 px-4">{patient.address}</td>
                     <td className="py-2 px-4">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:underline">View</button>
-                        <button className="text-yellow-500 hover:underline">Edit</button>
-                        <button className="text-red-600 hover:underline">Delete</button>
+                        <button 
+                        onClick={() => navigate(`/guardian/${patient.email}`)}
+                        className="text-blue-600 hover:underline">View</button>
                       </div>
                     </td>
                   </tr>

@@ -1,12 +1,14 @@
 const express = require('express');
 const { registerUser, loginUser, verifyEmail, getGuardianAndPatientData } = require('../controllers/authController');
-const { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus } = require('../controllers/appointmentController');
+const { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus, getAppointmentsForGuardian, getAppointmentDetails,
+  deleteAppointment, getUpcomingAppointmentsForGuardian
+ } = require('../controllers/appointmentController');
 const { createConsultation } = require('../controllers/consultationController');
 const { postAvailability, getMarkedDates } = require('../controllers/availabilityController');
 const { getPatientData } = require('../controllers/patientController');
 const { verifyRole } = require('../middleware/authMiddleware');
 const { getUserData } = require('../controllers/pediatricianController')
-const { manageAppointmentRequest, getAppointmentRequests } = require('../controllers/adminController');
+// const { manageAppointmentRequest, getAppointmentRequests } = require('../controllers/adminController');
 
 const router = express.Router();
 
@@ -23,6 +25,12 @@ router.get('/guardian/dashboard', verifyRole(['Guardian']), (req, res) => {
   });
 
 router.post('/appointments', verifyRole(['Guardian']), requestAppointment);
+router.get('/get-appointments', verifyRole(['Guardian']), getAppointmentsForGuardian);
+router.get('/get-appointments/:appointmentId', verifyRole(['Guardian']), getAppointmentDetails);
+router.delete('/get-appointments/:appointmentId', verifyRole(['Guardian']), getAppointmentDetails);
+router.delete('/appointments/:appointmentId', verifyRole(['Guardian']), deleteAppointment);
+router.get('/get-upcoming-appointments', verifyRole(['Guardian']), getUpcomingAppointmentsForGuardian);
+
 router.get('/appointments-get', verifyRole(['Admin']), getAppointmentsForAdmin);
 router.put('/appointments-admin', verifyRole(['Admin']), updateAppointmentStatus);
 

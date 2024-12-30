@@ -1,6 +1,7 @@
 const appointmentModel = require('../models/appointmentModel');
 const db = require('../config/db');
 
+
 // Request an appointment
 const requestAppointment = (req, res) => {
   const { date, timeStart, timeEnd, guardianId, patientId, description } = req.body;
@@ -23,16 +24,34 @@ const requestAppointment = (req, res) => {
 
 // Get all appointments for admin
 const getAppointmentsForAdmin = (req, res) => {
-  appointmentModel.getAppointmentsForAdmin((err, appointments) => {
+  
+  const sql = `
+    SELECT 
+      a.id AS appointmentId,
+      a.date,
+      a.timeStart,
+      a.timeEnd,
+      a.description,
+      a.status,
+      CONCAT(g.firstname, ' ', g.middlename, ' ', g.lastname) AS guardianFullName,
+      CONCAT(p.patientName) AS patientFullName
+    FROM appointments a
+    JOIN guardians g ON a.guardianId = g.id
+    JOIN patients p ON a.patientId = p.id
+  `;
+
+  db.execute(sql, [], (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Failed to retrieve appointments', error: err });
     }
-    res.json({ appointments });
+    res.json({ appointments: results });
   });
 };
 
+
 // Update the status of an appointment
 const updateAppointmentStatus = (req, res) => {
+  console.log('Received data in updateAppointmentStatus:', req.body);
   const { appointmentId, status } = req.body;
 
   if (!appointmentId || !status) {
@@ -47,4 +66,61 @@ const updateAppointmentStatus = (req, res) => {
   });
 };
 
-module.exports = { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus };
+const getAppointmentsForGuardian = (req, res) => {
+  const guardianId = req.user.id; // Get the guardianId from the JWT token
+
+  appointmentModel.getAppointmentsForGuardian(guardianId, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to retrieve appointments', error: err });
+    }
+    res.json({ appointments: results });
+  });
+};
+
+const getAppointmentDetails = (req, res) => {
+  const { appointmentId } = req.params;
+
+  appointmentModel.getAppointmentById(appointmentId, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to retrieve appointment details', error: err });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    res.json(results[0]);
+  });
+};
+
+const deleteAppointment = (req, res) => {
+  const { appointmentId } = req.params;
+
+  appointmentModel.deleteAppointmentById(appointmentId, (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to delete appointment', error: err });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+
+    res.status(200).json({ message: 'Appointment deleted successfully' });
+  });
+};
+
+const getUpcomingAppointmentsForGuardian = (req, res) => {
+  const guardianId = req.user.id; // Assuming this is extracted from the JWT token
+
+  appointmentModel.getUpcomingAppointmentsForGuardian(guardianId, (err, results) => {
+    if (err) {
+      return res.status(500).json({ message: 'Failed to retrieve appointments', error: err });
+    }
+    res.json(results); // Return upcoming appointments
+  });
+};
+
+
+module.exports = { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus, getAppointmentsForGuardian, getAppointmentDetails,
+  deleteAppointment, getUpcomingAppointmentsForGuardian
+ };
