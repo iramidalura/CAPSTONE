@@ -104,15 +104,26 @@ const GuardianRequestAppointment = () => {
   const handleDateChange = (e) => {
     const selectedDate = e.target.value;
     setSelectedDate(selectedDate);
-
+  
     setFormData((prevFormData) => ({
       ...prevFormData,
       appointment: { ...prevFormData.appointment, date: selectedDate },
     }));
-
+  
     const dateData = availableDates[selectedDate];
-    setAvailableTimes(dateData ? dateData.timeSlots : []);
-  };
+    if (selectedDate === moment().format('YYYY-MM-DD')) {
+      // Filter time slots for today to only show future times
+      const currentTime = moment();
+      setAvailableTimes(
+        dateData.timeSlots.filter((time) => {
+          const [start] = time.split(' - ');
+          return moment(start, 'hh:mm A').isAfter(currentTime);
+        })
+      );
+    } else {
+      setAvailableTimes(dateData ? dateData.timeSlots : []);
+    }
+  };  
 
   const handlePatientSelect = (e) => {
     const selectedPatientId = e.target.value;
@@ -274,6 +285,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.id}
             onChange={handlePatientSelect}
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+            required
           >
             <option value="">Select a patient</option>
             {patients.map((patient) => (
@@ -322,7 +334,7 @@ const GuardianRequestAppointment = () => {
             type="text"
             name="birthdate"
             id="birthdate"
-            value={formData.patient.birthdate || ''}
+            value={formData.patient.birthdate ? moment(formData.patient.birthdate).local().format("YYYY-MM-DD") : ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="birthdate"
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
@@ -393,24 +405,28 @@ const GuardianRequestAppointment = () => {
         {/* Appointment Details */}
         <h2 className="text-lg font-semibold text-green-700">Appointment Details</h2>
         <div className="flex flex-col">
-          <label htmlFor="patientSelect" className="text-sm font-medium text-gray-700">
-            Select Date (YYYY/MM/DD)
-          </label>
-          <select
-            id="date"
-            name="date"
-            value={formData.appointment.date}
-            onChange={handleDateChange}
-            className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
-          >
-            <option value="">Select a date</option>
-            {Object.keys(availableDates).map((date) => (
+        <label htmlFor="patientSelect" className="text-sm font-medium text-gray-700">
+          Select Date (YYYY/MM/DD)
+        </label>
+        <select
+          id="date"
+          name="date"
+          value={formData.appointment.date}
+          onChange={handleDateChange}
+          className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+            required
+        >
+          <option value="">Select a date</option>
+          {Object.keys(availableDates)
+            .filter((date) => moment(date).isSameOrAfter(moment(), 'day')) // Only future and present dates
+            .map((date) => (
               <option key={date} value={date}>
                 {date}
               </option>
             ))}
-          </select>
-        </div>
+        </select>
+      </div>
+
         {selectedDate && (
           <div className="flex flex-col">
           <label htmlFor="patientSelect" className="text-sm font-medium text-gray-700">

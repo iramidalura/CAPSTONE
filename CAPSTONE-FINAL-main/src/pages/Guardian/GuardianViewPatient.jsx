@@ -61,33 +61,26 @@ const GuardianViewPatient = () => {
             <p><strong>Name:</strong> {`${guardian.firstname} ${guardian.middlename || ''} ${guardian.lastname} ${guardian.extension || ''}`}</p>
             <p><strong>Email:</strong> {guardian.email}</p>
             <p><strong>Contact:</strong> {guardian.contact || 'No contact provided'}</p>
+            <p><strong>Address:</strong> {guardian.guardianAddress}</p>
           </div>
         ) : (
           <p>No guardian details available.</p>
         )}
 
-        <h2 className="text-2xl font-bold mb-4">Patients</h2>
+        <h2 className="text-2xl font-bold mb-4 mt-8">Patient Details</h2>
         {patients.length > 0 ? (
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-green-600 text-white">
-                <th className="py-3 px-4 text-left">Patient Name</th>
-                <th className="py-3 px-4 text-left">Age</th>
-                <th className="py-3 px-4 text-left">Address</th>
-                <th className="py-3 px-4 text-left">Guardian</th>
-              </tr>
-            </thead>
-            <tbody>
-              {patients.map((patient) => (
-                <tr key={patient.id} className="border-b hover:bg-green-50">
-                  <td className="py-2 px-4">{patient.name}</td>
-                  <td className="py-2 px-4">{patient.age}</td>
-                  <td className="py-2 px-4">{patient.address}</td>
-                  <td className="py-2 px-4">{patient.guardian}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          patients.map((patient) => (
+            <div key={patient.id} className="bg-gray-50 p-6 rounded-lg shadow-md mb-6">
+              <p><strong>Patient Name:</strong> {patient.name}</p>
+              <p><strong>Age:</strong> {patient.age}</p>
+              <p><strong>Address:</strong> {patient.address}</p>
+              <p><strong>Birth Date:</strong> {new Date(patient.birthdate).toLocaleDateString()}</p> {/* Formatted Birth Date */}
+              <p><strong>Sex:</strong> {patient.sex}</p>
+              <p><strong>Birth Place:</strong> {patient.birthplace}</p>
+              <p><strong>Religion:</strong> {patient.religion}</p>
+              <p><strong>Guardian:</strong> {patient.guardian}</p>
+            </div>
+          ))
         ) : (
           <p>No patients associated with this guardian.</p>
         )}

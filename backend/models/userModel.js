@@ -23,8 +23,8 @@ const createUser = (userData, callback) => {
 
 const createPediatrician = (pediatricianData, callback) => {
   const sql = `
-    INSERT INTO pediatricians (user_id, firstname, middlename, lastname, extension, contact)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO pediatricians (user_id, firstname, middlename, lastname, extension, contact, clinicAddress, specialization)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.execute(
@@ -36,6 +36,8 @@ const createPediatrician = (pediatricianData, callback) => {
       pediatricianData.lastname,
       pediatricianData.extension,
       pediatricianData.contact,
+      pediatricianData.clinicAddress, // New field
+      pediatricianData.specialization, // New field
     ],
     (err, result) => {
       if (err) {
@@ -47,18 +49,19 @@ const createPediatrician = (pediatricianData, callback) => {
   );
 };
 
+
 // Insert into the guardians table
 const createGuardian = (guardianData, callback) => {
   const sql = `
-    INSERT INTO guardians (user_id, firstname, middlename, lastname, extension, contact)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO guardians (user_id, firstname, middlename, lastname, extension, contact, guardianAddress)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.execute(
     sql,
     [
       guardianData.userId, guardianData.firstname, guardianData.middlename,
-      guardianData.lastname, guardianData.extension, guardianData.contact,
+      guardianData.lastname, guardianData.extension, guardianData.contact, guardianData.guardianAddress,
     ],
     (err, result) => {
       if (err) {

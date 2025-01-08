@@ -26,7 +26,16 @@ const GuardianMyCalendar = () => {
       });
 
       if (response.data && typeof response.data === "object") {
-        setMarkedDates(response.data);
+        // Filter out past dates
+        const today = moment().startOf("day"); // Start of the current day
+        const filteredDates = Object.entries(response.data).reduce((acc, [date, data]) => {
+          if (moment(date, "YYYY-MM-DD").isSameOrAfter(today)) {
+            acc[date] = data; // Include only present and future dates
+          }
+          return acc;
+        }, {});
+
+        setMarkedDates(filteredDates);
       }
     } catch (error) {
       console.error("Failed to fetch marked dates:", error);
@@ -95,7 +104,6 @@ const GuardianMyCalendar = () => {
             >
               Close
             </button>
-            
           </div>
         </div>
       )}

@@ -18,10 +18,15 @@ const getPatientData = (req, res) => {
       g.lastname AS lastname,
       g.extension,
       g.contact,
+      g.guardianAddress,
       p.id AS patient_id,
       p.patientName AS name,
       p.patientAge AS age,
-      p.address
+      p.address,
+      p.birthdate,
+      p.sex,
+      p.birthplace,
+      p.religion
     FROM users u
     JOIN guardians g ON u.id = g.user_id
     LEFT JOIN patients p ON g.id = p.guardian_id
@@ -49,6 +54,7 @@ const getPatientData = (req, res) => {
       lastname: results[0].lastname,
       extension: results[0].extension,
       contact: results[0].contact,
+      guardianAddress: results[0].guardianAddress,
     };
 
     const patients = results
@@ -60,6 +66,10 @@ const getPatientData = (req, res) => {
         guardian: row.guardian || `${row.firstname || ''} ${row.middlename || ''} ${row.lastname || ''}`,
         email: row.email,
         address: row.address || 'No address provided',
+        birthdate: row.birthdate || 'No birthdate provided',
+        sex: row.sex || 'No sex provided',
+        birthplace: row.birthplace || 'No Birthplace provided',
+        religion: row.religion || 'No address provided',
       }));
 
     res.json({ guardian, patients });

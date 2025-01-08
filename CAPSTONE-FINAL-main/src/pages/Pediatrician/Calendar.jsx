@@ -4,7 +4,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../../Available.css";
 import moment from "moment-timezone";
-import { jwtDecode}  from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 
 const MyCalendar = () => {
   const [availability, setAvailability] = useState([]);
@@ -12,7 +12,7 @@ const MyCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: "", 
+    name: "",
     email: "",
     timeSlots: [],
     status: "available",
@@ -27,15 +27,13 @@ const MyCalendar = () => {
   // Fetch marked dates
   const fetchMarkedDates = async () => {
     try {
-      const token = localStorage.getItem('token');
-        if (token) {
-          const decoded = jwtDecode(token);
-          console.log('Decoded token:', decoded);
-
-          if (Date.now() >= decoded.exp * 1000) {
-            console.error('Token expired');
-          }
+      const token = localStorage.getItem("token");
+      if (token) {
+        const decoded = jwtDecode(token);
+        if (Date.now() >= decoded.exp * 1000) {
+          console.error("Token expired");
         }
+      }
       const response = await axios.get("http://localhost:5000/api/marked-dates", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -75,6 +73,13 @@ const MyCalendar = () => {
 
   const handleTileClick = (date) => {
     const formattedDate = moment(date).format("YYYY-MM-DD");
+    const today = moment().format("YYYY-MM-DD");
+
+    if (moment(formattedDate).isBefore(today)) {
+      alert("You cannot set a schedule for past dates.");
+      return;
+    }
+
     setSelectedDate(formattedDate);
     setIsModalOpen(true);
   };
@@ -96,9 +101,16 @@ const MyCalendar = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
+    const today = moment().format("YYYY-MM-DD");
+
+    if (moment(formattedDate).isBefore(today)) {
+      alert("You cannot set a schedule for past dates.");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
-      const formattedDate = moment(selectedDate).format("YYYY-MM-DD");
 
       await axios.post(
         "http://localhost:5000/api/availability",
@@ -134,14 +146,25 @@ const MyCalendar = () => {
     }
     return null;
   };
-  
+
+  const tileDisabled = ({ date, view }) => {
+    if (view === "month") {
+      const today = moment().startOf("day");
+      return moment(date).isBefore(today);
+    }
+    return false;
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-white">
       <h2 className="text-3xl font-bold text-green-700">Calendar</h2>
       <p className="text-xl text-gray-500">View and Click the Date to Set Availability</p>
       <div className="mt-8">
-        <Calendar tileClassName={tileClassName} onClickDay={handleTileClick} />
+        <Calendar
+          tileClassName={tileClassName}
+          tileDisabled={tileDisabled}
+          onClickDay={handleTileClick}
+        />
       </div>
 
       {isModalOpen && (

@@ -5,7 +5,7 @@ const db = require('../config/db');
 
 // Register a new user
 const registerUser = (req, res) => {
-  const { email, password, userType, firstname, middlename, lastname, extension, contact, patientInfo } = req.body;
+  const { email, password, userType, firstname, middlename, lastname, extension, contact, guardianAddress, clinicAddress, specialization, patientInfo } = req.body;
 
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
@@ -20,7 +20,7 @@ const registerUser = (req, res) => {
       const userId = result.insertId;
 
       if (userType === 'Guardian') {
-        const guardianData = { userId, firstname, middlename, lastname, extension, contact };
+        const guardianData = { userId, firstname, middlename, lastname, extension, contact, guardianAddress };
         User.createGuardian(guardianData, (err, guardianResult) => {
           if (err) {
             return res.status(500).json({ message: 'Error creating guardian', err });
@@ -41,7 +41,7 @@ const registerUser = (req, res) => {
           }
         });
       } else if (userType === 'Pediatrician') {
-        const pediatricianData = { userId, firstname, middlename, lastname, extension, contact };
+        const pediatricianData = { userId, firstname, middlename, lastname, extension, contact, clinicAddress, specialization };
         User.createPediatrician(pediatricianData, (err) => {
           if (err) {
             return res.status(500).json({ message: 'Error creating pediatrician', err });

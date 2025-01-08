@@ -17,6 +17,9 @@ const RegistrationPage = () => {
     password: '',
     confirmPassword: '',
     userType: '',
+    guardianAddress: '',
+    clinicAddress: '', 
+    specialization: '', 
   });
   const [patientDetails, setPatientDetails] = useState ({
       patientName: '',
@@ -39,7 +42,8 @@ const RegistrationPage = () => {
       medicalHistory: '',
   });
 
-  const [showPatientForm, setShowPatientForm] = useState(false);
+  const [showGuardianFields, setShowGuardianFields] = useState(false);
+  const [showPediatricianFields, setShowPediatricianFields] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,11 +59,8 @@ const RegistrationPage = () => {
     const selectedUserType = e.target.value;
     setFormData({ ...formData, userType: selectedUserType });
 
-    if(selectedUserType === 'Guardian') {
-      setShowPatientForm(true);
-    } else {
-      setShowPatientForm(false);
-    }
+    setShowGuardianFields(selectedUserType === 'Guardian');
+    setShowPediatricianFields(selectedUserType === 'Pediatrician');
   };
 
   const handleSubmit = async (e) => {
@@ -91,7 +92,7 @@ const RegistrationPage = () => {
     // Prepare the data to send
     const userData = {
       ...formData,
-      patientInfo: showPatientForm ? patientDetails : null,
+      patientInfo: showGuardianFields ? patientDetails : null,
     };
 
     try {
@@ -110,6 +111,9 @@ const RegistrationPage = () => {
           password: '',
           confirmPassword: '',
           userType: '',
+          guardianAddress: '',
+          clinicAddress: '', 
+          specialization: '', 
         });
         setPatientDetails({
           patientName: '',
@@ -169,7 +173,25 @@ const RegistrationPage = () => {
             Create an Account!
           </h1>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* First Row */}
+            {/* User Type */}
+            <div>
+              <label className="block text-sm font-semibold mb-1">User Type</label>
+              <select
+                name="userType"
+                className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={formData.userType}
+                onChange={handleUserTypeChange}
+                required
+              >
+                <option value="">Select User Type</option>
+                <option value="Pediatrician">Pediatrician</option>
+                <option value="Guardian">Guardian</option>
+              </select>
+            </div>
+
+            {/* Guardian Fields */}
+            {showGuardianFields && (
+            <div className="w-full">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-1">First Name</label>
@@ -195,10 +217,6 @@ const RegistrationPage = () => {
                   required
                 />
               </div>
-            </div>
-
-            {/* Second Row */}
-            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-1">Last Name</label>
                 <input
@@ -222,10 +240,6 @@ const RegistrationPage = () => {
                   className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
-            </div>
-            
-            {/* Third Row */}
-            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-1">Email Address</label>
                 <input
@@ -250,10 +264,18 @@ const RegistrationPage = () => {
                   required
                 />
               </div>
-            </div>
-
-            {/* Password Row */}
-            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-semibold mb-1">Guardian Address</label>
+                <input
+                  type="text"
+                  name="guardianAddress"
+                  placeholder="Guardian Address"
+                  value={formData.guardianAddress}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
               <div>
                 <label className="block text-sm font-semibold mb-1">Password</label>
                 <input
@@ -282,28 +304,8 @@ const RegistrationPage = () => {
                   maxLength={12}
                 />
               </div>
-            </div>
-
-            {/* User Type */}
-            <div>
-              <label className="block text-sm font-semibold mb-1">User Type</label>
-              <select
-                name="userType"
-                className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={formData.userType}
-                onChange={handleUserTypeChange}
-                required
-              >
-                <option value="">Select User Type</option>
-                <option value="Admin">Admin</option>
-                <option value="Pediatrician">Pediatrician</option>
-                <option value="Guardian">Guardian</option>
-              </select>
-            </div>
-
-            {/* Conditional Patient Form */}
-            {showPatientForm && (
-            <div className="mt-4 w-full">
+              </div>
+              <div className="mt-4 w-full">
               <h2 className="text-xl font-bold text-center mb-2">Register Patient </h2>
               <div className="mb-4">
                 <label className="w-full text-left text-sm font-semibold mb-1">Patient Name (Lastname, Firstname, Middle Initial)</label>
@@ -526,7 +528,139 @@ const RegistrationPage = () => {
                 />
               </div>
             </div>
-          )}
+            </div>
+            )}
+
+            {/* Pediatrician Fields */}
+            {showPediatricianFields && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1">First Name</label>
+                <input
+                  type="text"
+                  name="firstname"
+                  placeholder="First Name"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Middle Name</label>
+                <input
+                  type="text"
+                  name="middlename"
+                  placeholder="Middle Name"
+                  value={formData.middlename}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Last Name</label>
+                <input
+                  type="text"
+                  name="lastname"
+                  placeholder="Last Name"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Name Extension</label>
+                <input
+                  type="text"
+                  name="extension"
+                  placeholder="Name Extension (e.g. Jr.)"
+                  value={formData.extension}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Contact Number</label>
+                <input
+                  type="tel"
+                  name="contact"
+                  placeholder="Contact Number"
+                  value={formData.contact}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Clinic Address</label>
+                <input
+                  type="text"
+                  name="clinicAddress"
+                  placeholder="Clinic Address"
+                  value={formData.clinicAddress}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Specialization</label>
+                <input
+                  type="text"
+                  name="specialization"
+                  placeholder="Specialization"
+                  value={formData.specialization}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                  minLength={8}
+                  maxLength={12}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full p-3 border-2 rounded-full border-gray-500 bg-gray-300 text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                  minLength={8}
+                  maxLength={12}
+                />
+              </div>
+            </div>
+            )}
+
+            
 
             {/* Sign Up Button */}
             <button
