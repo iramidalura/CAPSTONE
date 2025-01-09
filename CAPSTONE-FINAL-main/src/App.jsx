@@ -40,6 +40,7 @@ import AdminProfile from "./pages/Admin/Profile";
 import AdminMyCalendar from "./pages/Admin/Calendar";
 import GuardianViewPatient from "./pages/Guardian/GuardianViewPatient";
 import GuardianViewAppointment from "./pages/Guardian/GuardianViewAppointment";
+import PediatricianViewAppointment from "./pages/Pediatrician/PediatricianViewAppointment";
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />
           <Route path="calendar" element={<Calendar />} />
+          <Route path="/pediatrician/get-appointments-pediatrician/:appointmentId" element={<PediatricianViewAppointment />} />
           <Route path="request-consultation" element={<RequestConsultation />} />
           <Route path="request-appointment" element={<RequestAppointment />} />
           <Route path="activity-log" element={<ActivityLog />} />

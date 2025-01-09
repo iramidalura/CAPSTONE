@@ -9,6 +9,15 @@ const AdminAppointments = () => {
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc' for ascending, 'desc' for descending
   const [statusFilter, setStatusFilter] = useState('');
 
+  // Helper function to format the date to "YYYY-MM-DD"
+  const formatDate = (date) => {
+    const newDate = new Date(date);
+    const year = newDate.getFullYear();
+    const month = String(newDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(newDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -71,31 +80,27 @@ const AdminAppointments = () => {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
   };
-  
-  
 
   const filteredAppointments = sortAppointments(appointments)
-  .filter((appointment) => {
-    // Check if either patientFullName or guardianFullName matches the search term
-    const nameMatch = `${appointment.patientFullName} ${appointment.guardianFullName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    .filter((appointment) => {
+      // Check if either patientFullName or guardianFullName matches the search term
+      const nameMatch = `${appointment.patientFullName} ${appointment.guardianFullName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-    // Check if the searchTerm is a status and if it matches the appointment status
-    const statusMatch = statusFilter
-      ? appointment.status.toLowerCase() === statusFilter.toLowerCase()
-      : true;
+      // Check if the searchTerm is a status and if it matches the appointment status
+      const statusMatch = statusFilter
+        ? appointment.status.toLowerCase() === statusFilter.toLowerCase()
+        : true;
 
-    // Check if the search term matches any part of the appointment status
-    const statusSearchMatch = searchTerm
-      ? appointment.status.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
+      // Check if the search term matches any part of the appointment status
+      const statusSearchMatch = searchTerm
+        ? appointment.status.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
 
-    // Return true only if both conditions are met: name match + status match
-    return (nameMatch || statusSearchMatch) && statusMatch;
-  });
-
-
+      // Return true only if both conditions are met: name match + status match
+      return (nameMatch || statusSearchMatch) && statusMatch;
+    });
 
   if (loading) {
     return <div className="text-center text-lg">Loading appointments...</div>;
@@ -171,7 +176,7 @@ const AdminAppointments = () => {
               <tr key={appointment.appointmentId} className="border-b hover:bg-green-50">
                 <td className="px-6 py-4">{appointment.patientFullName}</td>
                 <td className="px-6 py-4">{appointment.guardianFullName}</td>
-                <td className="px-6 py-4">{appointment.date}</td>
+                <td className="px-6 py-4">{formatDate(appointment.date)}</td> {/* Format the date here */}
                 <td className="px-6 py-4">{appointment.timeStart} - {appointment.timeEnd}</td>
                 <td className="px-6 py-4">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${

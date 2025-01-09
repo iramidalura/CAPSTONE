@@ -1,153 +1,226 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Calendar from "react-calendar"; // Import the react-calendar component
-import "react-calendar/dist/Calendar.css"; // Import calendar styles
-import "../../Available.css";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 import moment from "moment-timezone";
 
 const PediatricianDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
-  const [date, setDate] = useState(new Date()); // State to manage selected date on the calendar
+  const [date, setDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [modalData, setModalData] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAppointments = async () => {
       try {
-        // Fetch appointments
-        const response = await axios.get("http://localhost:5000/api/appointments");
-        console.log("Fetched appointments:", response.data);
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:5000/api/get-appointments-for-pediatrician",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Appointments API response:", response.data);
 
-        const upcomingAppointments = response.data.filter((appointment) => {
-          const appointmentDate = new Date(appointment.date);
-          const localAppointmentDate = new Date(appointmentDate.toLocaleString());
-          localAppointmentDate.setHours(0, 0, 0, 0);
+        const appointmentsArray = response.data.appointments;
 
-          const currentDate = new Date();
-          currentDate.setHours(0, 0, 0, 0);
+        if (Array.isArray(appointmentsArray)) {
+          const upcomingAppointments = appointmentsArray.filter((appointment) => {
+            const appointmentDate = new Date(appointment.date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalize today's date to midnight
 
-          return localAppointmentDate >= currentDate;
-        });
-        setAppointments(upcomingAppointments);
-
-        // Fetch marked dates (availability)
-        const markedResponse = await axios.get("http://localhost:5000/api/marked-dates", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-
-        const availableDates = markedResponse.data;
-        const formattedMarkedDates = Object.keys(availableDates).reduce((acc, date) => {
-          acc[date] = availableDates[date]; // Use the status directly (e.g., "available" or "not_available")
-          return acc;
-        }, {});
-
-        setMarkedDates(formattedMarkedDates);
+            return (
+              appointmentDate >= today && // Include today's and future appointments
+              appointment.status === "approved" // Only approved appointments
+            );
+          });
+          setAppointments(upcomingAppointments);
+        } else {
+          console.error("Expected an array but got:", appointmentsArray);
+          setAppointments([]);
+        }
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("Error fetching appointments:", error);
       }
     };
 
-    fetchData();
+    const fetchMarkedDates = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/marked-dates",
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }
+        );
+        console.log("Marked Dates API response:", response.data);
+        setMarkedDates(response.data);
+      } catch (error) {
+        console.error("Error fetching marked dates:", error.response || error);
+      }
+    };
+
+    fetchAppointments();
+    fetchMarkedDates();
   }, []);
 
-  // Handle calendar date change
   const handleDateChange = (newDate) => {
     setDate(newDate);
   };
 
-  // Filter appointments for the selected date
+  const handleDateClick = (clickedDate) => {
+    const formattedDate = moment(clickedDate).format("YYYY-MM-DD");
+    const data = markedDates[formattedDate];
+    if (data) {
+      setSelectedDate(formattedDate);
+      setModalData(data);
+    } else {
+      setSelectedDate(null);
+      setModalData(null);
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedDate(null);
+    setModalData(null);
+  };
+
   const filteredAppointments = appointments.filter((appointment) => {
     const appointmentDate = new Date(appointment.date);
     return (
-      appointmentDate.getDate() === date.getDate() &&
-      appointmentDate.getMonth() === date.getMonth() &&
-      appointmentDate.getFullYear() === date.getFullYear()
+      appointmentDate >= new Date(date.setHours(0, 0, 0, 0)) // Match current selected date or future dates
     );
   });
 
-  // Assign CSS classes to calendar tiles based on markedDates
   const tileClassName = ({ date, view }) => {
     if (view === "month") {
       const formattedDate = moment(date).format("YYYY-MM-DD");
       if (markedDates[formattedDate]?.status === "available") {
-        return "available"; // Green class
+        return "available";
       } else if (markedDates[formattedDate]?.status === "not_available") {
-        return "not-available"; // Red class
+        return "not-available";
       }
     }
     return null;
   };
+
   return (
     <main className="flex-1 bg-green-100 p-10">
       <h1 className="text-2xl font-bold mb-6 text-green-900">
         Welcome to the Dashboard
       </h1>
 
-      {/* Upcoming Schedule Section */}
-      <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-600 mb-6">
-        <h2 className="text-2xl font-semibold text-green-900 mb-4">
-          Upcoming Schedule
-        </h2>
-        {appointments.length > 0 ? (
-          <ul className="mt-4 space-y-4">
-            {filteredAppointments.length > 0 ? (
-              filteredAppointments.map((appointment) => (
-                <li
-                  key={appointment.app_id}
-                  className="p-4 bg-white shadow-md rounded-md"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="text-md font-semibold text-green-700">
-                        {appointment.patient_name}
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        {new Date(appointment.date).toLocaleDateString()} at{" "}
-                        {appointment.time}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        navigate(`/appointments/${appointment.app_id}`)
-                      }
-                      className="bg-blue-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition-all"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </li>
-              ))
-            ) : (
-              <p className="text-lg text-green-800">
-                No appointments for this date.
+      {/* Upcoming Schedule */}
+      <div
+  className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
+  style={{ maxHeight: "400px", overflowY: "auto" }} // Added styles for scrollable container
+>
+  <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
+    Upcoming Schedule
+  </h2>
+  {filteredAppointments.length > 0 ? (
+    <ul className="mt-4 space-y-4">
+      {filteredAppointments.map((appointment) => (
+        <li
+          key={appointment.appointmentId}
+          className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
+        >
+          <div className="flex justify-between items-center">
+            <div>
+              <h4 className="text-lg font-medium text-green-900">
+                {appointment.patientFullName}
+              </h4>
+              <p className="text-sm text-gray-600">
+                <strong>Date:</strong>{" "}
+                {new Date(appointment.date).toLocaleDateString()}
               </p>
-            )}
-          </ul>
-        ) : (
-          <p className="text-lg text-green-800">No upcoming appointments.</p>
-        )}
-      </div>
+              <p className="text-sm text-gray-600">
+                <strong>Time:</strong>{" "}
+                {moment(appointment.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
+                {moment(appointment.timeEnd, "HH:mm:ss").format("h:mm A")}
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Status:</strong> {appointment.status}
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                navigate(
+                  `/pediatrician/get-appointments-pediatrician/${appointment.appointmentId}`
+                )
+              }
+              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
+            >
+              View Details
+            </button>
+          </div>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p className="text-lg text-gray-700 font-light">
+      No upcoming appointments scheduled yet.
+    </p>
+  )}
+</div>
+
 
       {/* Calendar Section */}
       <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-600 mb-6 flex flex-col justify-center items-center">
-        {/* Make "Calendar" clickable */}
         <h2
           className="text-2xl font-bold text-green-900 mb-4 text-center w-full cursor-pointer"
-          onClick={() => navigate("/pediatrician/calendar")} // Navigate to Calendar page when clicked
+          onClick={() => navigate("/pediatrician/calendar")}
         >
           Calendar
         </h2>
         <div className="w-full max-w-[500px]">
-          {/* Adjust max-width to resize calendar */}
           <Calendar
             onChange={handleDateChange}
             value={date}
-            className="react-calendar w-full h-full" // Ensure calendar fills its container
-            tileClassName={tileClassName} // Use tileClassName to mark available/not available dates
+            className="react-calendar w-full h-full"
+            tileClassName={tileClassName}
+            onClickDay={handleDateClick}
           />
         </div>
       </div>
+
+      {/* Modal for Selected Date */}
+      {modalData && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-2xl font-bold mb-4">
+              {selectedDate} -{" "}
+              {modalData.status === "available" ? "Available" : "Not Available"}
+            </h3>
+            <p>
+              <strong>Name:</strong> {modalData.name}
+            </p>
+            <p>
+              <strong>Email:</strong> {modalData.email}
+            </p>
+            <p>
+              <strong>Status:</strong> {modalData.status}
+            </p>
+            {modalData.timeSlots && (
+              <p>
+                <strong>Time Slots:</strong>{" "}
+                {modalData.timeSlots.join(", ")}
+              </p>
+            )}
+            <button
+              className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
+              onClick={closeModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 };

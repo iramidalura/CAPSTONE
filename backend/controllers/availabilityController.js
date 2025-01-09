@@ -63,60 +63,45 @@ const getMarkedDates = (req, res) => {
   let params;
 
   if (userRole === "Pediatrician") {
-    query = `SELECT date, status FROM availability WHERE user_id = ?`;
+    query = `SELECT date, status, timeSlots, name, email FROM availability WHERE user_id = ?`;
     params = [userId];
   } else if (userRole === "Guardian") {
     query = `SELECT date, status, timeSlots, name, email FROM availability`;
-    params = [];  
+    params = [];
   } else {
+    console.log("Unauthorized role:", userRole); // Log unauthorized access
     return res.status(403).json({ message: "Unauthorized role" });
   }
 
-  console.log("Executing query:", query, params);
+  console.log("Executing query:", query, "with params:", params); // Log query and params
   db.execute(query, params, (err, results) => {
     if (err) {
+      console.error("Database error:", err); // Log database error
       return res.status(500).json({ message: "Database error" });
     }
+
+    console.log("Raw database results:", results); // Log raw database results
 
     const markedDates = results.reduce((acc, row) => {
       const localDate = moment(row.date).tz("Asia/Manila").format("YYYY-MM-DD");
       acc[localDate] = {
         status: row.status,
-        name: row.name,
-        email: row.email,
+        name: row.name || null, // Log missing fields as null
+        email: row.email || null,
         timeSlots: Array.isArray(row.timeSlots)
-        ? row.timeSlots
-        : JSON.parse(row.timeSlots || "[]"),
+          ? row.timeSlots
+          : JSON.parse(row.timeSlots || "[]"),
       };
       return acc;
     }, {});
 
+    console.log("Formatted markedDates object:", markedDates); // Log final formatted data
     res.json(markedDates);
   });
 };
 
-const updateAvailability = (date, time, userId) => {
-  // Move the selected time from timeSlots to bookedTime
-  const query = `
-    UPDATE availability
-    SET timeSlots = JSON_REMOVE(timeSlots, '$[?(@ == ?)]'),
-        bookedTime = JSON_ARRAY_APPEND(bookedTime, '$', ?)
-    WHERE user_id = ? AND date = ?
-  `;
-  db.execute(
-    query,
-    [time, time, time, userId, date],
-    (err, result) => {
-      if (err) {
-        console.error("Error updating availability:", err);
-        return res.status(500).json({ message: "Error updating availability" });
-      }
-      res.status(200).json({ message: "Appointment accepted and availability updated." });
-    }
-  );
-};
 
 
 
 
-module.exports = { postAvailability, getMarkedDates, updateAvailability };
+module.exports = { postAvailability, getMarkedDates};

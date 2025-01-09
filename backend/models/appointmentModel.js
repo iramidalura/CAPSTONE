@@ -1,14 +1,15 @@
 const db = require('../config/db');
 
 // Create a new appointment
-const createAppointment = ({ date, timeStart, timeEnd, guardianId, patientId, description }, callback) => {
+const createAppointment = ({ date, timeStart, timeEnd, guardianId, patientId, description, email }, callback) => {
   const sql = `
-    INSERT INTO appointments (date, timeStart, timeEnd, guardianId, patientId, description, status)
-    VALUES (?, ?, ?, ?, ?, ?, 'Pending')
+    INSERT INTO appointments (date, timeStart, timeEnd, guardianId, patientId, description, email, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
   `;
   
-  db.execute(sql, [date, timeStart, timeEnd, guardianId, patientId, description], callback);
+  db.execute(sql, [date, timeStart, timeEnd, guardianId, patientId, description, email], callback);
 };
+
 
 // Get all appointments for the admin
 
@@ -140,7 +141,29 @@ const updateAppointmentStatus = (appointmentId, status, callback) => {
   });
 };
 
+const getAppointmentByIdForPediatrician = (appointmentId, pediatricianId, callback) => {
+  const sql = `
+    SELECT 
+      a.id AS appointmentId,
+      a.date,
+      a.timeStart,
+      a.timeEnd,
+      a.description,
+      a.status,
+      CONCAT(g.firstname, ' ', g.middlename, ' ', g.lastname) AS guardianFullName,
+      u.email AS guardianEmail, 
+      CONCAT(p.patientName) AS patientFullName,
+      p.patientAge
+    FROM appointments a
+    JOIN guardians g ON a.guardianId = g.id
+    JOIN users u ON g.user_id = u.id
+    JOIN patients p ON a.patientId = p.id
+    WHERE a.id = ? AND a.pediatricianId = ?;
+  `;
+
+  db.execute(sql, [appointmentId, pediatricianId], callback);
+};
 
 module.exports = { createAppointment, getAppointmentsForAdmin, getAppointmentsForGuardian, getAppointmentById, updateAppointmentStatus,
-  deleteAppointmentById, getUpcomingAppointmentsForGuardian, getGuardianId
+  deleteAppointmentById, getUpcomingAppointmentsForGuardian, getGuardianId, getAppointmentByIdForPediatrician
  };

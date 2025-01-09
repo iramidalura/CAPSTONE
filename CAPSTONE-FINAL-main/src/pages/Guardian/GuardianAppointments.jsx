@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import moment from 'moment';  // Import moment.js
 
 const GuardianAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -14,7 +15,6 @@ const GuardianAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        
         const response = await axios.get('http://localhost:5000/api/get-appointments', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
@@ -40,7 +40,10 @@ const GuardianAppointments = () => {
       if (sortBy === 'date') {
         comparison = new Date(a.date) - new Date(b.date);
       } else if (sortBy === 'time') {
-        comparison = new Date(`1970-01-01T${a.timeStart}`) - new Date(`1970-01-01T${b.timeStart}`);
+        // Use moment to compare times
+        const aTime = moment(a.timeStart, 'HH:mm');
+        const bTime = moment(b.timeStart, 'HH:mm');
+        comparison = aTime.isBefore(bTime) ? -1 : aTime.isAfter(bTime) ? 1 : 0;
       } else if (sortBy === 'patient') {
         comparison = a.patientFullName.localeCompare(b.patientFullName);
       } else if (sortBy === 'guardian') {
@@ -155,7 +158,6 @@ const GuardianAppointments = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 space-x-2">
-                  
                   <button
                     onClick={() => navigate(`/guardian/get-appointments/${appointment.appointmentId}`)}
                     className="bg-blue-600 text-white py-1 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"

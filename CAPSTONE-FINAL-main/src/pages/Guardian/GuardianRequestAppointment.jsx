@@ -5,8 +5,20 @@ import { IoArrowBack } from 'react-icons/io5';
 import { jwtDecode } from 'jwt-decode';
 import moment from 'moment'
 
+// Function to convert time from 24-hour format to 12-hour format (AM/PM)
+function convertTo12HourFormat(time24) {
+  // Remove any existing AM/PM and split the time into hours and minutes
+  const [hours, minutes] = time24.replace(/\s*(AM|PM)\s*/i, '').split(':');
+  const hour = parseInt(hours, 10);
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12; // Convert to 12-hour format
+  return `${hour12}:${minutes} ${period}`;
+}
+
+
 const GuardianRequestAppointment = () => {
   const navigate = useNavigate();
+  const email = localStorage.getItem('email');
   const [availableDates, setAvailableDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -18,7 +30,7 @@ const GuardianRequestAppointment = () => {
       email: '',
     },
     patient: {
-      id: '', // Initialize patient ID as an empty string
+      id: '', 
       patientName: '',
       patientAge: '',
       birthdate: '',
@@ -38,7 +50,8 @@ const GuardianRequestAppointment = () => {
     },
     appointment: {
       date: '',
-      time: '', // This will be a string like "start - end"
+      time: '', 
+      email,
       description: '',
     },
   });
@@ -73,17 +86,11 @@ const GuardianRequestAppointment = () => {
       }
     };
 
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('User not authenticated.');
-
-    const decoded = jwtDecode(token);
-
     const fetchAvailableDates = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/marked-dates", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-
         setAvailableDates(response.data);
       } catch (error) {
         console.error('Error fetching available dates:', error);
@@ -105,14 +112,19 @@ const GuardianRequestAppointment = () => {
     const selectedDate = e.target.value;
     setSelectedDate(selectedDate);
   
+    const dateData = availableDates[selectedDate];
+    const doctorEmail = dateData ? dateData.email : '';
+  
     setFormData((prevFormData) => ({
       ...prevFormData,
-      appointment: { ...prevFormData.appointment, date: selectedDate },
+      appointment: {
+        ...prevFormData.appointment,
+        date: selectedDate,
+        email: doctorEmail,
+      },
     }));
   
-    const dateData = availableDates[selectedDate];
     if (selectedDate === moment().format('YYYY-MM-DD')) {
-      // Filter time slots for today to only show future times
       const currentTime = moment();
       setAvailableTimes(
         dateData.timeSlots.filter((time) => {
@@ -123,7 +135,7 @@ const GuardianRequestAppointment = () => {
     } else {
       setAvailableTimes(dateData ? dateData.timeSlots : []);
     }
-  };  
+  };
 
   const handlePatientSelect = (e) => {
     const selectedPatientId = e.target.value;
@@ -144,31 +156,21 @@ const GuardianRequestAppointment = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('User not authenticated.');
   
-      // Ensure the time field is split into start and end times
-      const time = formData.appointment.time.split(' - ');
-      const timeStart = time[0];  // Start time (e.g., "09:00 AM")
-      const timeEnd = time[1];    // End time (e.g., "10:00 AM")
+      // Extract time and convert to 12-hour format
+      const [startTime, endTime] = formData.appointment.time.split(' - ');
   
-      const timeStart24hr = moment(timeStart, 'hh:mm A').format('HH:mm:ss');
-      const timeEnd24hr = moment(timeEnd, 'hh:mm A').format('HH:mm:ss');
-  
-      // Log the converted times
-      console.log('Converted Time Start:', timeStart24hr);
-      console.log('Converted Time End:', timeEnd24hr);
-  
-      if (!timeStart || !timeEnd) {
-        setError('Please select a valid time slot.');
-        setLoading(false);
-        return;
-      }
+      // Clean the time and convert it
+      const timeStart12 = convertTo12HourFormat(startTime);
+      const timeEnd12 = convertTo12HourFormat(endTime);
   
       const payload = {
         date: formData.appointment.date,
-        timeStart: timeStart24hr,
-        timeEnd: timeEnd24hr, // Use the end variable
+        timeStart: timeStart12,
+        timeEnd: timeEnd12,
         guardianId: formData.guardian.user_id,
         patientId: parseInt(formData.patient.id, 10),
         description: formData.appointment.description,
+        email: formData.appointment.email, // Include email in payload
       };
   
       console.log("Submitting payload:", payload);
@@ -185,7 +187,6 @@ const GuardianRequestAppointment = () => {
       setLoading(false);
     }
   };
-  
   
   
 
@@ -427,7 +428,7 @@ const GuardianRequestAppointment = () => {
         </select>
       </div>
 
-        {selectedDate && (
+        {selectedDate && formData.appointment.email && (
           <div className="flex flex-col">
           <label htmlFor="patientSelect" className="text-sm font-medium text-gray-700">
             Select Time
@@ -451,6 +452,19 @@ const GuardianRequestAppointment = () => {
               </option>
             ))}
           </select>
+          <div className="flex flex-col">
+          <label htmlFor="doctorEmail" className="text-sm font-medium text-gray-700">
+            Doctor's Email
+          </label>
+          <input
+            type="text"
+            id="doctorEmail"
+            name="doctorEmail"
+            value={formData.appointment.email}
+            readOnly
+            className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+          />
+        </div>
         </div>
         )}
         {/* Appointment fields */}
