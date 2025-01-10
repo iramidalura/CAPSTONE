@@ -5,9 +5,11 @@ const { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus, ge
  } = require('../controllers/appointmentController');
 const { createConsultation } = require('../controllers/consultationController');
 const { postAvailability, getMarkedDates } = require('../controllers/availabilityController');
-const { getPatientData } = require('../controllers/patientController');
+const { getPatientData, updatePatientData } = require('../controllers/patientController');
 const { verifyRole } = require('../middleware/authMiddleware');
-const { getUserData } = require('../controllers/pediatricianController')
+const { getUserData, getListUser, getConverstation, getMessages, sendMessage } = require('../controllers/pediatricianController')
+const { getGuardianProfile, updateGuardianProfile, getGuardianMessages, guardianSendMessage, createConversation, sendNewMessage } = require('../controllers/guardianController')
+const upload = require('../middleware/multerMiddleware');
 // const { manageAppointmentRequest, getAppointmentRequests } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -35,12 +37,27 @@ router.get('/get-appointments', verifyRole(['Guardian']), getAppointmentsForGuar
 router.get('/get-appointments/:appointmentId', verifyRole(['Guardian']), getAppointmentDetails);
 router.delete('/appointments/:appointmentId', verifyRole(['Guardian']), deleteAppointment);
 router.get('/get-upcoming-appointments', verifyRole(['Guardian']), getUpcomingAppointmentsForGuardian);
+router.put('/patient/:id', verifyRole(['Guardian']), updatePatientData);
+
+router.get('/guardian-msg/:id', verifyRole(['Guardian']), getGuardianMessages);
+router.post('/guardian-send-msg', verifyRole(['Guardian']), guardianSendMessage);
+router.post('/create-conversation', verifyRole(['Guardian']), createConversation);
+router.post('/send-new-msg', verifyRole(['Guardian']), sendNewMessage);
+
+router.get('/guardian-get-profile', verifyRole(['Guardian']), getGuardianProfile); 
+router.put('/guardian-update-profile', verifyRole(['Guardian']), upload.single('profileImage'), updateGuardianProfile); 
 
 router.get('/marked-dates', verifyRole(['Guardian', 'Pediatrician']), getMarkedDates);
+router.post('/pedia-send-msg', verifyRole(['Guardian', 'Pediatrician']), sendMessage);
 
 router.get('/user-data', verifyRole(['Pediatrician']), getUserData);
+router.get('/user-list', verifyRole(['Pediatrician']), getListUser);
+router.get('/conversation/:id', verifyRole(['Pediatrician']), getConverstation);
+router.get('/messages/:id', verifyRole(['Pediatrician']), getMessages);
+
 router.post('/availability', verifyRole(['Pediatrician']), postAvailability);
 router.get('/get-appointments-pediatrician/:appointmentId', verifyRole(['Pediatrician']), getAppointmentDetailsForPediatrician);
 router.get('/get-appointments-for-pediatrician', verifyRole(['Pediatrician']), getAppointmentsForPediatrician);
+
 
 module.exports = router;

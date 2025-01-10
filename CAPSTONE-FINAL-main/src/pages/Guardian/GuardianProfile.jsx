@@ -1,66 +1,176 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const GuardianProfile = () => {
-  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: 'Lessa Mae',
-    middleName: 'Caputol',
-    lastName: 'Ebarle',
-    email: 'ebarlelessa@email.com',
-    contactNumber: '09157270949',
-    clinicAddress: 'Ace Medical Center, Lapasan, Cagayan de Oro City',
-    birthMonth: 'October',
-    birthDay: '09',
-    birthYear: '2003',
-    gender: 'Female',
-    nationality: 'Filipino',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    contact: '',
+    guardianAddress: '',
   });
+  const [profileImage, setProfileImage] = useState('');
+  const [originalProfileImage, setOriginalProfileImage] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [profileImage, setProfileImage] = useState(null);
+  // Fetch guardian data
+  const fetchGuardianData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/guardian-get-profile', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const guardianData = response.data;
+      setFormData({
+        firstName: guardianData.firstname,
+        middleName: guardianData.middlename,
+        lastName: guardianData.lastname,
+        contact: guardianData.contact,
+        guardianAddress: guardianData.guardianAddress,
+      });
+
+      if (guardianData.profileImage) {
+        setProfileImage(`http://localhost:5000${guardianData.profileImage}`);
+        setOriginalProfileImage(`http://localhost:5000${guardianData.profileImage}`);
+      }
+    } catch (err) {
+      console.error('Error fetching guardian data:', err);
+      setError('Failed to load guardian data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGuardianData();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  const toggleEditing = () => {
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setProfileImage(originalProfileImage);
+    fetchGuardianData();
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      if (file.size > 50 * 1024 * 1024) {
+        alert('File size exceeds 50MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file');
+        return;
+      }
+      setProfileImage(file); // Set the file object directly
     }
   };
 
-  const toggleEditing = () => {
-    setIsEditing(!isEditing);
+  const saveChanges = async () => {
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const updatedFormData = new FormData();
+  
+      updatedFormData.append('firstName', formData.firstName);
+      updatedFormData.append('middleName', formData.middleName);
+      updatedFormData.append('lastName', formData.lastName);
+      updatedFormData.append('contact', formData.contact);
+      updatedFormData.append('guardianAddress', formData.guardianAddress);
+  
+      if (profileImage && profileImage !== originalProfileImage) {
+        updatedFormData.append('profileImage', profileImage);
+      }
+  
+      const response = await axios.put(
+        'http://localhost:5000/api/guardian-update-profile',
+        updatedFormData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      alert('Profile updated successfully!');
+      const updatedProfile = response.data.updatedProfile;
+  
+      // Update local state with the updated profile data
+      setFormData({
+        firstName: updatedProfile.firstname,
+        middleName: updatedProfile.middlename,
+        lastName: updatedProfile.lastname,
+        contact: updatedProfile.contact,
+        guardianAddress: updatedProfile.guardianAddress,
+      });
+      setProfileImage(`http://localhost:5000${updatedProfile.profileImage}`);
+      setOriginalProfileImage(`http://localhost:5000${updatedProfile.profileImage}`);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Error saving guardian data:', err);
+      alert('Failed to update profile.');
+    } finally {
+      setIsSaving(false);
+    }
   };
+  
+  
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="flex flex-col items-center p-10 bg-gray-50 min-h-screen">
       <div className="text-center mb-6">
         <img
-          src={profileImage || 'path_to_default_profile_image'}
+          src={typeof profileImage === 'string' ? profileImage : 'path_to_default_profile_image'}
           alt="Profile"
           className="rounded-full w-32 h-32 object-cover border-2 border-green-600"
         />
-        <button
-          onClick={toggleEditing}
-          className={`mt-4 py-2 px-6 rounded-full ${
-            isEditing ? 'bg-green-600' : 'bg-blue-500'
-          } text-white hover:bg-opacity-90 transition duration-300`}
-        >
-          {isEditing ? 'Save' : 'Edit Profile'}
-        </button>
-        {isEditing && (
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="mt-2 border border-gray-300 rounded p-2"
-          />
+        {isEditing ? (
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="mt-2 border border-gray-300 rounded p-2"
+            />
+            <button
+              onClick={saveChanges}
+              disabled={isSaving}
+              className="mt-4 py-2 px-6 rounded-full bg-green-600 text-white hover:bg-opacity-90 transition duration-300"
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              onClick={cancelEditing}
+              className="mt-4 ml-2 py-2 px-6 rounded-full bg-red-500 text-white hover:bg-opacity-90 transition duration-300"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={toggleEditing}
+            className="mt-4 py-2 px-6 rounded-full bg-blue-500 text-white hover:bg-opacity-90 transition duration-300"
+          >
+            Edit Profile
+          </button>
         )}
       </div>
 
@@ -74,9 +184,7 @@ const GuardianProfile = () => {
               value={formData.firstName}
               onChange={handleInputChange}
               disabled={!isEditing}
-              className={`w-full border p-2 rounded-lg ${
-                isEditing ? 'bg-gray-50' : 'bg-transparent'
-              }`}
+              className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
             />
           </div>
           <div>
@@ -87,9 +195,7 @@ const GuardianProfile = () => {
               value={formData.middleName}
               onChange={handleInputChange}
               disabled={!isEditing}
-              className={`w-full border p-2 rounded-lg ${
-                isEditing ? 'bg-gray-50' : 'bg-transparent'
-              }`}
+              className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
             />
           </div>
           <div>
@@ -100,128 +206,34 @@ const GuardianProfile = () => {
               value={formData.lastName}
               onChange={handleInputChange}
               disabled={!isEditing}
-              className={`w-full border p-2 rounded-lg ${
-                isEditing ? 'bg-gray-50' : 'bg-transparent'
-              }`}
+              className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-gray-600 font-semibold">Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              disabled={!isEditing}
-              className={`w-full border p-2 rounded-lg ${
-                isEditing ? 'bg-gray-50' : 'bg-transparent'
-              }`}
-            />
-          </div>
-          <div>
-            <label className="block text-gray-600 font-semibold">Contact Number:</label>
+            <label className="block text-gray-600 font-semibold">Contact:</label>
             <input
               type="text"
-              name="contactNumber"
-              value={formData.contactNumber}
+              name="contact"
+              value={formData.contact}
               onChange={handleInputChange}
               disabled={!isEditing}
-              className={`w-full border p-2 rounded-lg ${
-                isEditing ? 'bg-gray-50' : 'bg-transparent'
-              }`}
+              className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-gray-600 font-semibold">Clinic Address:</label>
+            <label className="block text-gray-600 font-semibold">Address:</label>
             <input
               type="text"
-              name="clinicAddress"
-              value={formData.clinicAddress}
+              name="guardianAddress"
+              value={formData.guardianAddress}
               onChange={handleInputChange}
               disabled={!isEditing}
-              className={`w-full border p-2 rounded-lg ${
-                isEditing ? 'bg-gray-50' : 'bg-transparent'
-              }`}
+              className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
             />
           </div>
-          <div>
-  <label className="block text-gray-600 font-semibold">Birthday:</label>
-  <div className="flex space-x-2">
-    <input
-      type="text"
-      name="birthMonth"
-      value={formData.birthMonth}
-      onChange={handleInputChange}
-      disabled={!isEditing}
-      className="border p-2 rounded-lg w-24" // Set width for the month input
-    />
-    <input
-      type="text"
-      name="birthDay"
-      value={formData.birthDay}
-      onChange={handleInputChange}
-      disabled={!isEditing}
-      className="border p-2 rounded-lg w-16" // Set width for the day input
-    />
-    <input
-      type="text"
-      name="birthYear"
-      value={formData.birthYear}
-      onChange={handleInputChange}
-      disabled={!isEditing}
-      className="border p-2 rounded-lg w-28" // Set width for the year input
-    />
-  </div>
-</div>
-
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-600 font-semibold">Gender:</label>
-          <div className="flex items-center">
-            <label className="mr-4">
-              <input
-                type="radio"
-                name="gender"
-                value="Male"
-                checked={formData.gender === 'Male'}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />{' '}
-              Male
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                value="Female"
-                checked={formData.gender === 'Female'}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-              />{' '}
-              Female
-            </label>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-gray-600 font-semibold">Nationality:</label>
-          <input
-            type="text"
-            name="nationality"
-            value={formData.nationality}
-            onChange={handleInputChange}
-            disabled={!isEditing}
-            className={`w-full border p-2 rounded-lg ${
-              isEditing ? 'bg-gray-50' : 'bg-transparent'
-            }`}
-          />
         </div>
       </div>
     </div>

@@ -1,79 +1,175 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const getConsultation = async () => {
-  try {
-    const response = await fetch('/api/consultation'); // Replace with your API endpoint
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching consultation:', error);
-    throw error;
-  }
-};
-
-const GuardianConsultation = () => {
-  const [consultation, setConsultation] = useState([]);
+const GuardianConsultations = () => {
+  const [consultations, setConsultations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [statusFilter, setStatusFilter] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchConsultation = async () => {
+    const fetchConsultations = async () => {
       try {
-        const data = await getConsultation();
-        setConsultation(data);
+        
+        const response = await axios.get('http://localhost:5000/api/get-consultations', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        setConsultations(response.data.consultations);
       } catch (error) {
-        console.error('Failed to fetch consultation:', error);
+        console.error('Error fetching consultations:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchConsultation();
+    fetchConsultations();
   }, []);
 
-  return (
-    <main className="flex-1 bg-gradient-to-br from-green-50 to-green-100 p-10 h-screen">
+  const handleSortOrderToggle = () => {
+    setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  };
 
-      <div className="bg-white p-5 rounded-lg shadow mb-6">
-        <div className="flex justify-between items-center text-green-900 font-semibold text-lg border-b-2 border-green-300 pb-2">
-          <span>Consultation ID</span>
-          <span>Patient Name</span>
-          <span>Date</span>
-          <span>Time</span>
-          <span>Actions</span>
-        </div>
+  const sortConsultations = (consultations) => {
+    return consultations.sort((a, b) => {
+      let comparison = 0;
+
+      if (sortBy === 'date') {
+        comparison = new Date(a.date) - new Date(b.date);
+      } else if (sortBy === 'time') {
+        comparison = new Date(`1970-01-01T${a.timeStart}`) - new Date(`1970-01-01T${b.timeStart}`);
+      } else if (sortBy === 'patient') {
+        comparison = a.patientFullName.localeCompare(b.patientFullName);
+      } else if (sortBy === 'guardian') {
+        comparison = a.guardianFullName.localeCompare(b.guardianFullName);
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  };
+
+  const filteredConsultations = sortConsultations(consultations).filter((consultation) => {
+    const nameMatch = `${consultation.patientFullName} ${consultation.guardianFullName}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const statusMatch = statusFilter
+      ? consultation.status.toLowerCase() === statusFilter.toLowerCase()
+      : true;
+
+    const statusSearchMatch = searchTerm
+      ? consultation.status.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    return (nameMatch || statusSearchMatch) && statusMatch;
+  });
+
+  if (loading) {
+    return <div className="text-center text-lg">Loading consultations...</div>;
+  }
+
+  return (
+    <div className="container mx-auto p-6">
+      <h2 className="text-2xl font-semibold mb-6 text-center">Guardian Consultations Dashboard</h2>
+
+      <div className="flex items-center gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300"
+        />
+
+        <button
+          onClick={handleSortOrderToggle}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
+        >
+          {sortOrder === 'asc' ? (
+            <span className="text-green-500">↑</span>
+          ) : (
+            <span className="text-green-500">↓</span>
+          )}
+        </button>
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
+        >
+          <option value="date">Date</option>
+          <option value="time">Time</option>
+          <option value="patient">Patient</option>
+          <option value="guardian">Guardian</option>
+        </select>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-48 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
+        >
+          <option value="">Filter by Status</option>
+          <option value="pending">pending</option>
+          <option value="approved">approved</option>
+          <option value="declined">declined</option>
+        </select>
       </div>
 
-      <div className="flex-grow overflow-y-auto">
-        {consultation.length > 0 ? (
-          consultation.map((consultation) => (
-            <div key={consultation.consultation_id} className="bg-white p-5 rounded-lg shadow mt-4 border border-gray-300">
-              <div className="flex justify-between items-center text-gray-700">
-                <span>{consultation.consultation_id}</span>
-                <span>{consultation.patient_name}</span>
-                <span>{new Date(consultation.date).toLocaleDateString()}</span>
-                <span>{consultation.time}</span>
-                <div className="flex space-x-4">
-                  <button className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1">
+      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+        <table className="min-w-full table-auto text-left text-sm text-gray-500">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Consultation ID</th>
+              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Patient</th>
+              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Guardian</th>
+              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Time</th>
+              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredConsultations.map((consultation) => (
+              <tr key={consultation.consultationId} className="border-b hover:bg-green-50">
+                <td className="px-6 py-4">{consultation.consultationId}</td>
+                <td className="px-6 py-4">{consultation.patientFullName}</td>
+                <td className="px-6 py-4">{consultation.guardianFullName}</td>
+                <td className="px-6 py-4">{new Date(consultation.date).toLocaleDateString()}</td>
+                <td className="px-6 py-4">
+                  {consultation.timeStart} - {consultation.timeEnd}
+                </td>
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      consultation.status.toLowerCase() === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : consultation.status.toLowerCase() === 'approved'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {consultation.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 space-x-2">
+                  
+                  <button
+                    onClick={() => navigate(`/guardian/get-consultations/${consultation.consultationId}`)}
+                    className="bg-blue-600 text-white py-1 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
                     View
                   </button>
-                  <button className="text-yellow-500 hover:text-yellow-600 hover:underline focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md p-1">
-                    Edit
-                  </button>
-                  <button className="text-red-600 hover:text-red-800 hover:underline focus:outline-none focus:ring-2 focus:ring-red-500 rounded-md p-1">
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-lg text-green-800">No consultations available.</p>
-        )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </main>
+    </div>
   );
 };
 
-export default GuardianConsultation;
+export default GuardianConsultations;

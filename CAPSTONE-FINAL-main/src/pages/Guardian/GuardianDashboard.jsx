@@ -70,52 +70,52 @@ const GuardianDashboard = () => {
       </h1>
 
       <div
-  className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
-  style={{ maxHeight: "400px", overflowY: "auto" }} // Added styles for scrollable container
->
-  <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
-    Upcoming Schedule
-  </h2>
-  {appointments.length > 0 ? (
-    <ul className="mt-4 space-y-4">
-      {appointments.map((appointment) => (
-        <li
-          key={appointment.appointmentId}
-          className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h4 className="text-lg font-medium text-green-900">
-                {appointment.patientFullName}
-              </h4>
-              <p className="text-sm text-gray-600">
-                <strong>Date:</strong> {appointment.date}
+            className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
+            style={{ maxHeight: "400px", overflowY: "auto" }} // Added styles for scrollable container
+          >
+            <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
+              Upcoming Schedule
+            </h2>
+            {appointments.length > 0 ? (
+              <ul className="mt-4 space-y-4">
+                {appointments.map((appointment) => (
+                  <li
+                    key={appointment.appointmentId}
+                    className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="text-lg font-medium text-green-900">
+                          {appointment.patientFullName}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          <strong>Date:</strong> {appointment.date}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <strong>Time:</strong> {appointment.time}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <strong>Status:</strong> {appointment.status}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          navigate(`/guardian/get-appointments/${appointment.appointmentId}`)
+                        }
+                        className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-lg text-gray-700 font-light">
+                No upcoming appointments scheduled yet.
               </p>
-              <p className="text-sm text-gray-600">
-                <strong>Time:</strong> {appointment.time}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Status:</strong> {appointment.status}
-              </p>
-            </div>
-            <button
-              onClick={() =>
-                navigate(`/guardian/get-appointments/${appointment.appointmentId}`)
-              }
-              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
-            >
-              View Details
-            </button>
+            )}
           </div>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p className="text-lg text-gray-700 font-light">
-      No upcoming appointments scheduled yet.
-    </p>
-  )}
-</div>
 
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

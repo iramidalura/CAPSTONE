@@ -41,6 +41,9 @@ import AdminMyCalendar from "./pages/Admin/Calendar";
 import GuardianViewPatient from "./pages/Guardian/GuardianViewPatient";
 import GuardianViewAppointment from "./pages/Guardian/GuardianViewAppointment";
 import PediatricianViewAppointment from "./pages/Pediatrician/PediatricianViewAppointment";
+import GuardianConsultations from "./pages/Guardian/GuardianConsultation";
+import GuardianViewConsultation from "./pages/Guardian/GuardianViewConsultations";
+import GuardianEditPatient from "./pages/Guardian/GuardianEditPatient";
 
 function App() {
   return (
@@ -56,6 +59,7 @@ function App() {
         <Route path="/guardian" element={<GuardianLayout />}>
           <Route path="dashboard" element={<GuardianDashboard />} />
           <Route path="appointments" element={<GuardianAppointments />} />
+          <Route path="consultations" element={<GuardianConsultations />} />
           <Route path="patients" element={<GuardianPatients />} />
           <Route path="/guardian/:email" element={<GuardianViewPatient />} />
           <Route path="chat" element={<GuardianChat />} />
@@ -65,9 +69,12 @@ function App() {
           <Route path="request-consultation" element={<GuardianRequestConsultation />} />
           <Route path="request-appointment" element={<GuardianRequestAppointment />} />
           <Route path="/guardian/get-appointments/:appointmentId" element={<GuardianViewAppointment />} />
+          <Route path="/guardian/get-appointments/:appointmentId" element={<GuardianViewConsultation />} />
           <Route path="activity-log" element={<GuardianActivityLog />} />
           <Route path="settings" element={<GuardianSettings />} />
           <Route path="about-us" element={<GuardianAboutUs />} />
+          <Route path="edit-patient" element={<GuardianEditPatient />} />
+          <Route path="register-patient" element={<GuardianEditPatient />} />
         </Route>
 
         <Route path="/pediatrician" element={<PediatricianLayout />}>
