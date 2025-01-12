@@ -15,7 +15,7 @@ const GuardianViewConsultation = () => {
     const fetchConsultationDetails = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:5000/api/get-consultations/${consultationId}`, {
+        const response = await axios.get(`http://localhost:5000/api/get-consultation-details/${consultationId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultation(response.data);

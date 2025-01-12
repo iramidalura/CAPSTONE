@@ -11,10 +11,11 @@ const PediatricianSidebar = () => {
   const SIDEBAR_LINKS = [
     { id: 1, path: "/pediatrician/dashboard", name: "Dashboard", icon: FaNotesMedical },
     { id: 2, path: "/pediatrician/appointments", name: "Appointments", icon: FaRegCalendarAlt },
-    { id: 3, path: "/pediatrician/consultations", name: "Patients", icon: FaUser },
-    { id: 4, path: "/pediatrician/chat", name: "Chat", icon: LuMessageSquare },
-    { id: 5, path: "/pediatrician/notifications", name: "Notifications", icon: IoIosNotificationsOutline },
-    { id: 6, path: "/pediatrician/profile", name: "Profile", icon: FaUserCircle },
+    { id: 3, path: "/pediatrician/consultations", name: "Consultations", icon: FaRegCalendarAlt },
+    { id: 4, path: "/pediatrician/patients", name: "Patients", icon: FaUser },
+    { id: 5, path: "/pediatrician/chat", name: "Chat", icon: LuMessageSquare },
+    { id: 6, path: "/pediatrician/notifications", name: "Notifications", icon: IoIosNotificationsOutline },
+    { id: 7, path: "/pediatrician/profile", name: "Profile", icon: FaUserCircle },
   ];
 
   const handleLinkClick = (id) => {

@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const User = require('../models/userModel');
+const { getPediatricianById, updatePediatricianById } = require('../models/pediatricianModels');
 
 const getUserData = (req, res) => {
     const { id } = req.user;
@@ -111,9 +112,80 @@ const sendMessage = (req, res) => {
     })
 }
 
+// Get pediatrician profile
+const getPediatricianProfile = (req, res) => {
+    const userId = req.user.id; // Extract user ID from authenticated request
+  
+    getPediatricianById(userId, (err, pediatrician) => {
+      if (err) {
+        console.error('Error fetching pediatrician profile:', err);
+        return res.status(500).json({ message: 'Failed to fetch pediatrician profile.' });
+      }
+      if (!pediatrician) {
+        return res.status(404).json({ message: 'Pediatrician not found.' });
+      }
+      res.json(pediatrician);
+    });
+  };
+  
+  // Update pediatrician profile
+  const updatePediatricianProfile = (req, res) => {
+    const userId = req.user.id; // Extract user ID from authenticated request
+    const updatedData = req.body;
+
+    console.log('User ID:', userId);
+  
+    // Handle profile image if provided
+    if (req.file) {
+      const filePath = `/uploads/profile_images/${req.file.filename}`;
+      updatedData.profileImage = filePath;
+    }
+  
+    // Fetch existing profile to ensure we have the current profileImage
+    getPediatricianById(userId, (err, existingProfile) => {
+      if (err) {
+        console.error('Error fetching existing profile:', err);
+        return res.status(500).json({ message: 'Failed to update profile.' });
+      }
+      console.log('Pediatrician data:', pediatrician); // Add this line
+      if (!existingProfile) {
+        return res.status(404).json({ message: 'Pediatrician profile not found.' });
+      }
+  
+      // Preserve the existing profile image if no new image is provided
+      if (!updatedData.profileImage) {
+        updatedData.profileImage = existingProfile?.profileImage || null;
+      }
+  
+      // Proceed with updating the profile
+      updatePediatricianById(userId, updatedData, (err) => {
+        if (err) {
+          console.error('Error updating pediatrician profile:', err);
+          return res.status(500).json({ message: 'Failed to update pediatrician profile.' });
+        }
+        console.log('SQL Query:', sql);
+        console.log('Params:', [pediatricianId]);
+
+  
+        // Send back the updated profile
+        const updatedProfile = {
+          ...existingProfile,
+          ...updatedData,
+        };
+  
+        res.json({
+          message: 'Pediatrician profile updated successfully.',
+          updatedProfile,
+        });
+      });
+    });
+  };
+
 module.exports = { 
     getUserData, 
     getListUser, 
     getConverstation,
     getMessages,
-    sendMessage };
+    sendMessage,
+    getPediatricianProfile, 
+    updatePediatricianProfile };

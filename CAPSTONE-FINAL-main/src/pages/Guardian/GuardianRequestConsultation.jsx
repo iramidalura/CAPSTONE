@@ -5,8 +5,19 @@ import { IoArrowBack } from 'react-icons/io5';
 import { jwtDecode } from 'jwt-decode';
 import moment from 'moment'
 
+// Function to convert time from 24-hour format to 12-hour format (AM/PM)
+function convertTo12HourFormat(time24) {
+  // Remove any existing AM/PM and split the time into hours and minutes
+  const [hours, minutes] = time24.replace(/\s*(AM|PM)\s*/i, '').split(':');
+  const hour = parseInt(hours, 10);
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12; // Convert to 12-hour format
+  return `${hour12}:${minutes} ${period}`;
+}
+
 const GuardianRequestConsultation = () => {
   const navigate = useNavigate();
+  const email = localStorage.getItem('email');
   const [availableDates, setAvailableDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState('');
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -39,6 +50,7 @@ const GuardianRequestConsultation = () => {
     appointment: {
       date: '',
       time: '', // This will be a string like "start - end"
+      email,
       description: '',
     },
   });
@@ -102,28 +114,33 @@ const GuardianRequestConsultation = () => {
   };
 
   const handleDateChange = (e) => {
-    const selectedDate = e.target.value;
-    setSelectedDate(selectedDate);
-  
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      appointment: { ...prevFormData.appointment, date: selectedDate },
-    }));
-  
-    const dateData = availableDates[selectedDate];
-    if (selectedDate === moment().format('YYYY-MM-DD')) {
-      // Filter time slots for today to only show future times
-      const currentTime = moment();
-      setAvailableTimes(
-        dateData.timeSlots.filter((time) => {
-          const [start] = time.split(' - ');
-          return moment(start, 'hh:mm A').isAfter(currentTime);
-        })
-      );
-    } else {
-      setAvailableTimes(dateData ? dateData.timeSlots : []);
-    }
-  };  
+      const selectedDate = e.target.value;
+      setSelectedDate(selectedDate);
+    
+      const dateData = availableDates[selectedDate];
+      const doctorEmail = dateData ? dateData.email : '';
+    
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        appointment: {
+          ...prevFormData.appointment,
+          date: selectedDate,
+          email: doctorEmail,
+        },
+      }));
+    
+      if (selectedDate === moment().format('YYYY-MM-DD')) {
+        const currentTime = moment();
+        setAvailableTimes(
+          dateData.timeSlots.filter((time) => {
+            const [start] = time.split(' - ');
+            return moment(start, 'hh:mm A').isAfter(currentTime);
+          })
+        );
+      } else {
+        setAvailableTimes(dateData ? dateData.timeSlots : []);
+      }
+    };
 
   const handlePatientSelect = (e) => {
     const selectedPatientId = e.target.value;
@@ -144,43 +161,33 @@ const GuardianRequestConsultation = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('User not authenticated.');
   
-      // Ensure the time field is split into start and end times
-      const time = formData.appointment.time.split(' - ');
-      const timeStart = time[0];  // Start time (e.g., "09:00 AM")
-      const timeEnd = time[1];    // End time (e.g., "10:00 AM")
+      // Extract time and convert to 12-hour format
+      const [startTime, endTime] = formData.appointment.time.split(' - ');
   
-      const timeStart24hr = moment(timeStart, 'hh:mm A').format('HH:mm:ss');
-      const timeEnd24hr = moment(timeEnd, 'hh:mm A').format('HH:mm:ss');
-  
-      // Log the converted times
-      console.log('Converted Time Start:', timeStart24hr);
-      console.log('Converted Time End:', timeEnd24hr);
-  
-      if (!timeStart || !timeEnd) {
-        setError('Please select a valid time slot.');
-        setLoading(false);
-        return;
-      }
+      // Clean the time and convert it
+      const timeStart12 = convertTo12HourFormat(startTime);
+      const timeEnd12 = convertTo12HourFormat(endTime);
   
       const payload = {
         date: formData.appointment.date,
-        timeStart: timeStart24hr,
-        timeEnd: timeEnd24hr, // Use the end variable
+        timeStart: timeStart12,
+        timeEnd: timeEnd12,
         guardianId: formData.guardian.user_id,
         patientId: parseInt(formData.patient.id, 10),
         description: formData.appointment.description,
+        email: formData.appointment.email, // Include email in payload
       };
   
       console.log("Submitting payload:", payload);
   
-      await axios.post('http://localhost:5000/api/appointments/', payload, {
+      await axios.post('http://localhost:5000/api/consultations/', payload, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
   
       setSuccess(true);
     } catch (err) {
       console.error("Submission error:", err);
-      setError('Failed to request consultation. Please try again.');
+      setError('Failed to request appointment. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -451,6 +458,19 @@ const GuardianRequestConsultation = () => {
               </option>
             ))}
           </select>
+          <div className="flex flex-col">
+          <label htmlFor="doctorEmail" className="text-sm font-medium text-gray-700">
+            Doctor's Email
+          </label>
+          <input
+            type="text"
+            id="doctorEmail"
+            name="doctorEmail"
+            value={formData.appointment.email}
+            readOnly
+            className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
+          />
+        </div>
         </div>
         )}
         {/* Appointment fields */}
@@ -479,7 +499,7 @@ const GuardianRequestConsultation = () => {
           {loading ? 'Submitting...' : 'Submit Request'}
         </button>
         {error && <p className="text-red-600 text-center">{error}</p>}
-        {success && <p className="text-green-600 text-center">Appointment requested successfully!</p>}
+        {success && <p className="text-green-600 text-center">Consultation requested successfully!</p>}
       </form>
     </div>
   );

@@ -4,7 +4,7 @@ import { LuMessageSquare } from 'react-icons/lu'; // For Chat/Message
 import { IoIosNotificationsOutline } from 'react-icons/io'; // For Notifications
 import { FaNotesMedical } from 'react-icons/fa'; // For Dashboard
 import { FiUser } from 'react-icons/fi'; // For Patients and Profile
-import { FaPrescriptionBottleAlt } from 'react-icons/fa'; // For Prescriptions
+import { FaPrescriptionBottleAlt, FaRegCalendarAlt } from 'react-icons/fa'; // For Prescriptions
 import { MdOutlineCalendarToday } from 'react-icons/md'; // For Calendar
 import { FaUserMd } from 'react-icons/fa'; // For Users (Doctors)
 import logo from '../../assets/kiddiecare.png';
@@ -12,11 +12,11 @@ import logo from '../../assets/kiddiecare.png';
 const AdminSidebar = () => {
   const SIDEBAR_LINKS = [
     { id: 1, path: "/admin/dashboard", name: "Dashboard", icon: FaNotesMedical },
-    { id: 2, path: "/admin/patients", name: "Patients", icon: FiUser },
-    { id: 3, path: "/admin/users", name: "Users", icon: FaUserMd },
-    { id: 4, path: "/admin/prescriptions", name: "Prescriptions", icon: FaPrescriptionBottleAlt },
-    { id: 5, path: "/admin/calendar", name: "Calendar", icon: MdOutlineCalendarToday },
-    { id: 6, path: "/admin/profile", name: "Profile", icon: FiUser },
+    { id: 2, path: "/admin/calendar", name: "Calendar", icon: MdOutlineCalendarToday },
+    { id: 3, path: "/admin/appointments", name: "Appointments", icon: FaRegCalendarAlt },
+    { id: 4, path: "/admin/consultations", name: "Consultations", icon: FaRegCalendarAlt },
+    { id: 5, path: "/admin/patients", name: "Patients", icon: FiUser },
+    { id: 6, path: "/admin/users", name: "Users", icon: FaUserMd },
   ];
 
   return (

@@ -1,219 +1,313 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const AdminAppointments = () => {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('date'); // Default to sorting by date
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' for ascending, 'desc' for descending
-  const [statusFilter, setStatusFilter] = useState('');
+const AdminProfile = () => {
+  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: 'Lessa Mae',
+    middleName: 'Caputol',
+    lastName: 'Ebarle',
+    email: 'ebarlelessa@email.com',
+    contactNumber: '09157270949',
+    clinicAddress: 'Ace Medical Center, Lapasan, Cagayan de Oro City',
+    birthMonth: 'October',
+    birthDay: '09',
+    birthYear: '2003',
+    gender: 'Female',
+    nationality: 'Filipino',
+  });
+  const [profileImage, setProfileImage] = useState(null);
 
-  // Helper function to format the date to "YYYY-MM-DD"
-  const formatDate = (date) => {
-    const newDate = new Date(date);
-    const year = newDate.getFullYear();
-    const month = String(newDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-    const day = String(newDate.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  const handleLogout = () => {
+    navigate('/WelcomePage');
   };
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/appointments-get', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        setAppointments(response.data.appointments);
-      } catch (error) {
-        console.error('Error fetching appointments:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
 
-    fetchAppointments();
-  }, []);
-
-  const handleStatusChange = async (appointmentId, status) => {
-    try {
-      await axios.put('http://localhost:5000/api/appointments-admin', 
-        { appointmentId, status }, 
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
-      setAppointments((prevAppointments) =>
-        prevAppointments.map((appointment) =>
-          appointment.appointmentId === appointmentId
-            ? { ...appointment, status }
-            : appointment
-        )
-      );
-    } catch (error) {
-      console.error('Error updating appointment status:', error);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  // Function to toggle the sorting order (ascending/descending)
-  const handleSortOrderToggle = () => {
-    setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  const toggleEditing = () => {
+    setIsEditing(!isEditing);
   };
 
-  // Function to sort appointments based on selected criteria and order
-  const sortAppointments = (appointments) => {
-    return appointments.sort((a, b) => {
-      let comparison = 0;
-  
-      if (sortBy === 'date') {
-        comparison = new Date(a.date) - new Date(b.date);
-      } else if (sortBy === 'time') {
-        comparison = new Date(`1970-01-01T${a.timeStart}`) - new Date(`1970-01-01T${b.timeStart}`);
-      } else if (sortBy === 'patient') {
-        const patientA = a.patientFullName ? a.patientFullName : ''; // Default to empty string if undefined or null
-        const patientB = b.patientFullName ? b.patientFullName : '';
-        comparison = patientA.localeCompare(patientB); // Alphabetical comparison
-      } else if (sortBy === 'guardian') {
-        const guardianA = a.guardianFullName ? a.guardianFullName : '';
-        const guardianB = b.guardianFullName ? b.guardianFullName : '';
-        comparison = guardianA.localeCompare(guardianB); // Alphabetical comparison
-      }
-  
-      return sortOrder === 'asc' ? comparison : -comparison;
+  const handleCancel = () => {
+    setIsEditing(false);
+    setFormData({
+      firstName: 'Lessa Mae',
+      middleName: 'Caputol',
+      lastName: 'Ebarle',
+      email: 'ebarlelessa@email.com',
+      contactNumber: '09157270949',
+      clinicAddress: 'Ace Medical Center, Lapasan, Cagayan de Oro City',
+      birthMonth: 'October',
+      birthDay: '09',
+      birthYear: '2003',
+      gender: 'Female',
+      nationality: 'Filipino',
     });
   };
-
-  const filteredAppointments = sortAppointments(appointments)
-    .filter((appointment) => {
-      // Check if either patientFullName or guardianFullName matches the search term
-      const nameMatch = `${appointment.patientFullName} ${appointment.guardianFullName}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-
-      // Check if the searchTerm is a status and if it matches the appointment status
-      const statusMatch = statusFilter
-        ? appointment.status.toLowerCase() === statusFilter.toLowerCase()
-        : true;
-
-      // Check if the search term matches any part of the appointment status
-      const statusSearchMatch = searchTerm
-        ? appointment.status.toLowerCase().includes(searchTerm.toLowerCase())
-        : true;
-
-      // Return true only if both conditions are met: name match + status match
-      return (nameMatch || statusSearchMatch) && statusMatch;
-    });
-
-  if (loading) {
-    return <div className="text-center text-lg">Loading appointments...</div>;
-  }
 
   return (
-    <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Admin Appointment Dashboard</h2>
+    <main className="flex-1 bg-green-100 p-10 h-screen">
 
-      {/* Filters and Actions Row */}
-      <div className="flex items-center gap-4 mb-6">
-        {/* Search Bar */}
-        <input
-          type="text"
-          placeholder="Search"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300"
-        />
-
-        {/* Sort Order Toggle Button (with arrows) */}
-        <button
-          onClick={handleSortOrderToggle}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
-        >
-          {sortOrder === 'asc' ? (
-            <span className="text-green-500">↑</span>
-          ) : (
-            <span className="text-green-500">↓</span>
+      {/* Profile Form */}
+      <div className="flex flex-col items-center p-10 bg-green-50 mb-10">
+        <div className="flex flex-col items-center text-center mb-6">
+          {/* Profile Image */}
+          <img
+            src={profileImage || 'path_to_default_profile_image'}
+            alt="Profile"
+            className="rounded-full w-32 h-32 object-cover border-2 border-green-600 mb-4"
+          />
+          {/* Edit Button */}
+          <button
+            onClick={toggleEditing}
+            className={`mt-2 py-2 px-6 rounded ${isEditing ? 'bg-green-600' : 'bg-gray-400'} text-white hover:bg-green-700 transition duration-300`}
+          >
+            {isEditing ? 'Save' : 'Edit'}
+          </button>
+          {/* File Input for Image */}
+          {isEditing && (
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="mt-2 border border-gray-300 rounded p-2"
+            />
           )}
+        </div>
+
+        <form className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-lg">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div>
+              <label className="block mb-1 font-semibold">Firstname:</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className="border border-gray-300 rounded p-3 w-full"
+                aria-label="First Name"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Middlename:</label>
+              <input
+                type="text"
+                name="middleName"
+                value={formData.middleName}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className="border border-gray-300 rounded p-3 w-full"
+                aria-label="Middle Name"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Lastname:</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className="border border-gray-300 rounded p-3 w-full"
+                aria-label="Last Name"
+              />
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-1 font-semibold">Email:</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className="border border-gray-300 rounded p-3 w-full"
+              aria-label="Email"
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-1 font-semibold">Contact Number:</label>
+            <input
+              type="text"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className="border border-gray-300 rounded p-3 w-full"
+              aria-label="Contact Number"
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-1 font-semibold">Address:</label>
+            <input
+              type="text"
+              name="clinicAddress"
+              value={formData.clinicAddress}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className="border border-gray-300 rounded p-3 w-full"
+              aria-label="Clinic Address"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div>
+              <label className="block mb-1 font-semibold">Month:</label>
+              <input
+                type="text"
+                name="birthMonth"
+                value={formData.birthMonth}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className="border border-gray-300 rounded p-3 w-full"
+                aria-label="Birth Month"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Day:</label>
+              <input
+                type="text"
+                name="birthDay"
+                value={formData.birthDay}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className="border border-gray-300 rounded p-3 w-full"
+                aria-label="Birth Day"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-semibold">Year:</label>
+              <input
+                type="text"
+                name="birthYear"
+                value={formData.birthYear}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className="border border-gray-300 rounded p-3 w-full"
+                aria-label="Birth Year"
+              />
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-1 font-semibold">Gender:</label>
+            <div className="flex space-x-4">
+              <div>
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Male"
+                  checked={formData.gender === 'Male'}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="mr-2"
+                />
+                <label className="mr-4">Male</label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Female"
+                  checked={formData.gender === 'Female'}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="mr-2"
+                />
+                <label>Female</label>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block mb-1 font-semibold">Nationality:</label>
+            <input
+              type="text"
+              name="nationality"
+              value={formData.nationality}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className="border border-gray-300 rounded p-3 w-full"
+              aria-label="Nationality"
+            />
+          </div>
+
+          {/* Save and Cancel buttons below the Nationality input */}
+          {isEditing && (
+            <div className="flex space-x-4">
+              <button
+                onClick={handleCancel}
+                className="bg-gray-400 text-white py-2 px-6 rounded hover:bg-gray-600 transition duration-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={toggleEditing}
+                className="bg-green-600 text-white py-2 px-6 rounded hover:bg-green-800 transition duration-300"
+              >
+                Save
+              </button>
+            </div>
+          )}
+        </form>
+      </div>
+
+      {/* Activity Logs and About Us */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        {/* Activity Logs */}
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600">
+          <h3 className="font-semibold text-xl text-green-900">Activity Logs</h3>
+          <p className="mt-2 text-gray-700">View your recent activities and actions.</p>
+          <Link to="/pediatrician/activity-log">
+            <button className="mt-4 bg-green-600 text-white py-2 px-6 rounded hover:bg-green-800 transition duration-300">
+              Go to Activity Log
+            </button>
+          </Link>
+        </div>
+
+        {/* About Us */}
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600">
+          <h3 className="font-semibold text-xl text-green-900">About Us</h3>
+          <p className="mt-2 text-gray-700">Learn more about KiddieCare.</p>
+          <Link to="/pediatrician/about-us">
+            <button className="mt-4 bg-green-600 text-white py-2 px-6 rounded hover:bg-green-800 transition duration-300">
+              Go to About Us
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Logout */}
+      <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600">
+        <h3 className="font-semibold text-xl text-green-900">Logout</h3>
+        <button
+          onClick={handleLogout}
+          className="mt-4 bg-red-600 text-white py-2 px-6 rounded hover:bg-red-800 transition duration-300"
+        >
+          Logout
         </button>
-
-        {/* Sort Dropdown */}
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
-        >
-          <option value="date">Date</option>
-          <option value="time">Time</option>
-          <option value="patient">Patient</option>
-          <option value="guardian">Guardian</option>
-        </select>
-
-        {/* Status Filter */}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-48 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
-        >
-          <option value="">Filter by Status</option>
-          <option value="approved" className="hover:bg-green-50">Approved</option>
-          <option value="declined" className="hover:bg-green-50">Declined</option>
-          <option value="pending" className="hover:bg-green-50">Pending</option>
-        </select>
       </div>
-
-      {/* Appointments Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table className="min-w-full table-auto text-left text-sm text-gray-500">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Patient</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Guardian</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Time</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAppointments.map((appointment) => (
-              <tr key={appointment.appointmentId} className="border-b hover:bg-green-50">
-                <td className="px-6 py-4">{appointment.patientFullName}</td>
-                <td className="px-6 py-4">{appointment.guardianFullName}</td>
-                <td className="px-6 py-4">{formatDate(appointment.date)}</td> {/* Format the date here */}
-                <td className="px-6 py-4">{appointment.timeStart} - {appointment.timeEnd}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    appointment.status.toLowerCase() === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                    appointment.status.toLowerCase() === 'approved' ? 'bg-green-100 text-green-800' : 
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {appointment.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 space-x-2">
-                  {appointment.status.toLowerCase() === 'pending' && (
-                    <>
-                      <button
-                        onClick={() => handleStatusChange(appointment.appointmentId, 'approved')}
-                        className="bg-green-600 text-white py-1 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(appointment.appointmentId, 'declined')}
-                        className="bg-red-600 text-white py-1 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      >
-                        Decline
-                      </button>
-                    </>
-                  )}
-                  {appointment.status.toLowerCase() === 'approved' && <span className="text-green-600 font-semibold">Approved</span>}
-                  {appointment.status.toLowerCase() === 'declined' && <span className="text-red-600 font-semibold">Declined</span>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </main>
   );
 };
 
-export default AdminAppointments;
+export default AdminProfile;

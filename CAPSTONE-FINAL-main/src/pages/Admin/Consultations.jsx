@@ -1,21 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const GuardianConsultations = () => {
+const AdminConsultations = () => {
   const [consultations, setConsultations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('asc');
   const [statusFilter, setStatusFilter] = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchConsultations = async () => {
       try {
-        
-        const response = await axios.get('http://localhost:5000/api/get-consultations', {
+        const response = await axios.get('http://localhost:5000/api/consultations-get', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultations(response.data.consultations);
@@ -28,6 +25,25 @@ const GuardianConsultations = () => {
 
     fetchConsultations();
   }, []);
+
+  const handleStatusChange = async (consultationId, status) => {
+    try {
+      await axios.put(
+        'http://localhost:5000/api/consultations-admin',
+        { consultationId, status },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );  
+      setConsultations((prevConsultations) =>
+        prevConsultations.map((consultation) =>
+          consultation.consultationId === consultationId
+            ? { ...consultation, status }
+            : consultation
+        )
+      );
+    } catch (error) {
+      console.error('Error updating consultation status:', error);
+    }
+  };
 
   const handleSortOrderToggle = () => {
     setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
@@ -55,16 +71,10 @@ const GuardianConsultations = () => {
     const nameMatch = `${consultation.patientFullName} ${consultation.guardianFullName}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-
     const statusMatch = statusFilter
       ? consultation.status.toLowerCase() === statusFilter.toLowerCase()
       : true;
-
-    const statusSearchMatch = searchTerm
-      ? consultation.status.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-
-    return (nameMatch || statusSearchMatch) && statusMatch;
+    return nameMatch && statusMatch;
   });
 
   if (loading) {
@@ -73,8 +83,7 @@ const GuardianConsultations = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Guardian Consultations Dashboard</h2>
-
+      <h2 className="text-2xl font-semibold mb-6 text-center">Consultations Dashboard</h2>
       <div className="flex items-center gap-4 mb-6">
         <input
           type="text"
@@ -83,18 +92,12 @@ const GuardianConsultations = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300"
         />
-
         <button
           onClick={handleSortOrderToggle}
           className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
         >
-          {sortOrder === 'asc' ? (
-            <span className="text-green-500">↑</span>
-          ) : (
-            <span className="text-green-500">↓</span>
-          )}
+          {sortOrder === 'asc' ? '↑' : '↓'}
         </button>
-
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
@@ -105,39 +108,35 @@ const GuardianConsultations = () => {
           <option value="patient">Patient</option>
           <option value="guardian">Guardian</option>
         </select>
-
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="w-48 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
         >
           <option value="">Filter by Status</option>
-          <option value="pending">pending</option>
-          <option value="approved">approved</option>
-          <option value="declined">declined</option>
+          <option value="approved">Approved</option>
+          <option value="declined">Declined</option>
+          <option value="pending">Pending</option>
         </select>
       </div>
-
       <div className="overflow-x-auto bg-white rounded-lg shadow-md">
         <table className="min-w-full table-auto text-left text-sm text-gray-500">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Consultation ID</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Patient</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Guardian</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Time</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3">Patient</th>
+              <th className="px-6 py-3">Guardian</th>
+              <th className="px-6 py-3">Date</th>
+              <th className="px-6 py-3">Time</th>
+              <th className="px-6 py-3">Status</th>
+              <th className="px-6 py-3">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredConsultations.map((consultation) => (
               <tr key={consultation.consultationId} className="border-b hover:bg-green-50">
-                <td className="px-6 py-4">{consultation.consultationId}</td>
                 <td className="px-6 py-4">{consultation.patientFullName}</td>
                 <td className="px-6 py-4">{consultation.guardianFullName}</td>
-                <td className="px-6 py-4">{new Date(consultation.date).toLocaleDateString()}</td>
+                <td className="px-6 py-4">{consultation.date}</td>
                 <td className="px-6 py-4">
                   {consultation.timeStart} - {consultation.timeEnd}
                 </td>
@@ -154,14 +153,23 @@ const GuardianConsultations = () => {
                     {consultation.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 space-x-2">
-                  
-                  <button
-                    onClick={() => navigate(`/guardian/get-consultation-details/${consultation.consultationId}`)}
-                    className="bg-blue-600 text-white py-1 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    View
-                  </button>
+                <td className="px-6 py-4">
+                  {consultation.status.toLowerCase() === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => handleStatusChange(consultation.consultationId, 'approved')}
+                        className="bg-green-600 text-white py-1 px-4 rounded-md hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(consultation.consultationId, 'declined')}
+                        className="bg-red-600 text-white py-1 px-4 rounded-md hover:bg-red-700"
+                      >
+                        Decline
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -172,4 +180,4 @@ const GuardianConsultations = () => {
   );
 };
 
-export default GuardianConsultations;
+export default AdminConsultations;

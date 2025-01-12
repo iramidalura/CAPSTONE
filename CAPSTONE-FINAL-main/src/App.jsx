@@ -44,6 +44,10 @@ import PediatricianViewAppointment from "./pages/Pediatrician/PediatricianViewAp
 import GuardianConsultations from "./pages/Guardian/GuardianConsultation";
 import GuardianViewConsultation from "./pages/Guardian/GuardianViewConsultations";
 import GuardianEditPatient from "./pages/Guardian/GuardianEditPatient";
+import Patients from "./pages/Pediatrician/Patient";
+import AdminAppointments from "./pages/Admin/Appointments";
+import AdminConsultations from "./pages/Admin/Consultations";
+import PediatricianViewConsultation from "./pages/Pediatrician/VIewConsultations";
 
 function App() {
   return (
@@ -69,7 +73,7 @@ function App() {
           <Route path="request-consultation" element={<GuardianRequestConsultation />} />
           <Route path="request-appointment" element={<GuardianRequestAppointment />} />
           <Route path="/guardian/get-appointments/:appointmentId" element={<GuardianViewAppointment />} />
-          <Route path="/guardian/get-appointments/:appointmentId" element={<GuardianViewConsultation />} />
+          <Route path="/guardian/get-consultation-details/:consultationId" element={<GuardianViewConsultation />} />
           <Route path="activity-log" element={<GuardianActivityLog />} />
           <Route path="settings" element={<GuardianSettings />} />
           <Route path="about-us" element={<GuardianAboutUs />} />
@@ -81,11 +85,13 @@ function App() {
           <Route path="dashboard" element={<PediatricianDashboard />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="consultations" element={<Consultations />} />
+          <Route path="patients" element={<Patients />} />
           <Route path="chat/:roomName" element={<ParentComponent />} />
           <Route path="chat" element={<Chat />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="profile" element={<Profile />} />
           <Route path="calendar" element={<Calendar />} />
+          <Route path="/pediatrician/get-consultation-details-for-pediatrician/:consultationId" element={<PediatricianViewConsultation />} />
           <Route path="/pediatrician/get-appointments-pediatrician/:appointmentId" element={<PediatricianViewAppointment />} />
           <Route path="request-consultation" element={<RequestConsultation />} />
           <Route path="request-appointment" element={<RequestAppointment />} />
@@ -102,6 +108,8 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="profile" element={<AdminProfile />} />
           <Route path="calendar" element={<AdminMyCalendar />} />
+          <Route path="appointments" element={<AdminAppointments />} />
+          <Route path="consultations" element={<AdminConsultations />} />
         </Route>
 
         {/* Fallback Route */}

@@ -7,6 +7,7 @@ import moment from "moment-timezone";
 
 const PediatricianDashboard = () => {
   const [appointments, setAppointments] = useState([]);
+  const [consultations, setConsultations] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
   const [date, setDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
@@ -50,6 +51,42 @@ const PediatricianDashboard = () => {
       }
     };
 
+    const fetchConsultations = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:5000/api/get-consultations-for-pediatrician",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Consultations API response:", response.data);
+
+        const consultationsArray = response.data.consultations;
+
+        if (Array.isArray(consultationsArray)) {
+          const upcomingConsultations = consultationsArray.filter((consultation) => {
+            const consultationDate = new Date(consultation.date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalize today's date to midnight
+
+            return (
+              consultationDate >= today && // Include today's and future consultations
+              consultation.status === "approved" // Only approved consultations
+            );
+          });
+          setConsultations(upcomingConsultations);
+        } else {
+          console.error("Expected an array but got:", consultationsArray);
+          setConsultations([]);
+        }
+      } catch (error) {
+        console.error("Error fetching consultations:", error);
+      }
+    };
+
     const fetchMarkedDates = async () => {
       try {
         const response = await axios.get(
@@ -66,6 +103,7 @@ const PediatricianDashboard = () => {
     };
 
     fetchAppointments();
+    fetchConsultations();
     fetchMarkedDates();
   }, []);
 
@@ -97,6 +135,13 @@ const PediatricianDashboard = () => {
     );
   });
 
+  const filteredConsultations = consultations.filter((consultation) => {
+    const consultationDate = new Date(consultation.date);
+    return (
+      consultationDate >= new Date(date.setHours(0, 0, 0, 0)) // Match current selected date or future dates
+    );
+  });
+
   const tileClassName = ({ date, view }) => {
     if (view === "month") {
       const formattedDate = moment(date).format("YYYY-MM-DD");
@@ -115,60 +160,113 @@ const PediatricianDashboard = () => {
         Welcome to the Dashboard
       </h1>
 
-      {/* Upcoming Schedule */}
+      {/* Upcoming Appointments */}
       <div
-  className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
-  style={{ maxHeight: "400px", overflowY: "auto" }} // Added styles for scrollable container
->
-  <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
-    Upcoming Schedule
-  </h2>
-  {filteredAppointments.length > 0 ? (
-    <ul className="mt-4 space-y-4">
-      {filteredAppointments.map((appointment) => (
-        <li
-          key={appointment.appointmentId}
-          className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <h4 className="text-lg font-medium text-green-900">
-                {appointment.patientFullName}
-              </h4>
-              <p className="text-sm text-gray-600">
-                <strong>Date:</strong>{" "}
-                {new Date(appointment.date).toLocaleDateString()}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Time:</strong>{" "}
-                {moment(appointment.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
-                {moment(appointment.timeEnd, "HH:mm:ss").format("h:mm A")}
-              </p>
-              <p className="text-sm text-gray-600">
-                <strong>Status:</strong> {appointment.status}
-              </p>
-            </div>
-            <button
-              onClick={() =>
-                navigate(
-                  `/pediatrician/get-appointments-pediatrician/${appointment.appointmentId}`
-                )
-              }
-              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
-            >
-              View Details
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p className="text-lg text-gray-700 font-light">
-      No upcoming appointments scheduled yet.
-    </p>
-  )}
-</div>
+        className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
+        style={{ maxHeight: "400px", overflowY: "auto" }}
+      >
+        <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
+          Upcoming Appointments
+        </h2>
+        {filteredAppointments.length > 0 ? (
+          <ul className="mt-4 space-y-4">
+            {filteredAppointments.map((appointment) => (
+              <li
+                key={appointment.appointmentId}
+                className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h4 className="text-lg font-medium text-green-900">
+                      {appointment.patientFullName}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      <strong>Date:</strong>{" "}
+                      {new Date(appointment.date).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <strong>Time:</strong>{" "}
+                      {moment(appointment.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
+                      {moment(appointment.timeEnd, "HH:mm:ss").format("h:mm A")}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <strong>Status:</strong> {appointment.status}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      navigate(
+                        `/pediatrician/get-appointments-pediatrician/${appointment.appointmentId}`
+                      )
+                    }
+                    className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-lg text-gray-700 font-light">
+            No upcoming appointments scheduled yet.
+          </p>
+        )}
+      </div>
 
+      {/* Upcoming Consultations */}
+      <div
+        className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
+        style={{ maxHeight: "400px", overflowY: "auto" }}
+      >
+        <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
+          Upcoming Consultations
+        </h2>
+        {filteredConsultations.length > 0 ? (
+          <ul className="mt-4 space-y-4">
+            {filteredConsultations.map((consultation) => (
+              <li
+                key={consultation.consultationId}
+                className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h4 className="text-lg font-medium text-green-900">
+                      {consultation.patientFullName}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      <strong>Date:</strong>{" "}
+                      {new Date(consultation.date).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <strong>Time:</strong>{" "}
+                      {moment(consultation.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
+                      {moment(consultation.timeEnd, "HH:mm:ss").format("h:mm A")}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <strong>Status:</strong> {consultation.status}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      navigate(
+                        `/pediatrician/get-consultation-details-for-pediatrician/${consultation.consultationId}`
+                      )
+                    }
+                    className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-lg text-gray-700 font-light">
+            No upcoming consultations scheduled yet.
+          </p>
+        )}
+      </div>
 
       {/* Calendar Section */}
       <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-600 mb-6 flex flex-col justify-center items-center">
