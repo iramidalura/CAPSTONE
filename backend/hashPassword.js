@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const password = 'adminPassword'; // The plain-text password you want to hash
 
