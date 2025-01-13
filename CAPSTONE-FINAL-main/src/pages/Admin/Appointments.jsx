@@ -29,7 +29,7 @@ const AdminAppointments = () => {
 
   const handleStatusChange = async (appointmentId, status) => {
     try {
-      await axios.put('http://capstone-production-bd9d.up.railway.app/api/appointments-admin', 
+      await axios.put('${process.env.API_BASE_URL}/api/appointments-admin', 
         { appointmentId, status }, 
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
