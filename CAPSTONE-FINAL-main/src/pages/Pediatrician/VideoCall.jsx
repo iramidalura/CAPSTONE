@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   MeetingProvider,
-  MeetingConsumer,
   useMeeting,
   useParticipant,
 } from "@videosdk.live/react-sdk";
@@ -25,13 +24,17 @@ function JoinScreen({ getMeetingAndToken, setCalling }) {
           }}
         />
         <div className="ml-5">
-          {/* <button onClick={onClick} className="font-semibold">Join</button> */}
-          {/* {" or "} */}
-          <button onClick={onClick} className="font-semibold">Create Meeting</button>
+          <button onClick={onClick} className="font-semibold">
+            Create Meeting
+          </button>
         </div>
-        
       </div>
-      <button onClick={() => setCalling(false)} className="text-blue-600 text-xl my-2 font-extrabold">Back to chat</button>
+      <button
+        onClick={() => setCalling(false)}
+        className="text-blue-600 text-xl my-2 font-extrabold"
+      >
+        Back to chat
+      </button>
     </div>
   );
 }
@@ -68,7 +71,7 @@ function ParticipantView(props) {
   }, [micStream, micOn]);
 
   return (
-    <div className="flex justify-center items-center flex-col">
+    <div className="flex flex-col items-center">
       <p>
         Participant: {displayName} | Webcam: {webcamOn ? "ON" : "OFF"} | Mic:{" "}
         {micOn ? "ON" : "OFF"}
@@ -76,25 +79,25 @@ function ParticipantView(props) {
       <audio ref={micRef} autoPlay playsInline muted={isLocal} />
       {webcamOn ? (
         <ReactPlayer
-          //
-          playsinline // extremely crucial prop
+          playsinline
           pip={false}
           light={false}
           controls={false}
           muted={true}
           playing={true}
-          //
           url={videoStream}
-          //
-          height={"300px"}
-          width={"300px"}
+          height={"500px"} // Enlarged height
+          width={"500px"}  // Enlarged width
+          style={{ borderRadius: "10px" }}
           onError={(err) => {
             console.log(err, "participant video error");
           }}
         />
-      ): <div className="flex justify-center items-center h-[300px] w-[300px] border">
-      <div className="border-t-4 border-blue-500 border-solid rounded-full w-16 h-16 animate-spin"></div>
-    </div>}
+      ) : (
+        <div className="flex justify-center items-center h-[500px] w-[500px] border rounded-lg">
+          <div className="border-t-4 border-blue-500 border-solid rounded-full w-16 h-16 animate-spin"></div>
+        </div>
+      )}
     </div>
   );
 }
@@ -102,66 +105,87 @@ function ParticipantView(props) {
 function Controls() {
   const { leave, toggleMic, toggleWebcam } = useMeeting();
   return (
-    <div className="items-center justify-center flex space-x-2">
-      <button className="bg-slate-300 p-2" onClick={() => leave()}>Leave</button>
-      <button className="bg-slate-300 p-2" onClick={() => toggleMic()}>On Mic</button>
-      <button className="bg-slate-300 p-2" onClick={() => toggleWebcam()}>toggle Cam</button>
+    <div className="items-center justify-center flex space-x-2 mt-4">
+      <button className="bg-slate-300 p-3 rounded-lg font-bold" onClick={() => leave()}>
+        Leave
+      </button>
+      <button className="bg-slate-300 p-3 rounded-lg font-bold" onClick={() => toggleMic()}>
+        On Mic
+      </button>
+      <button className="bg-slate-300 p-3 rounded-lg font-bold" onClick={() => toggleWebcam()}>
+        Toggle Cam
+      </button>
     </div>
   );
 }
 
 function MeetingView(props) {
   const [joined, setJoined] = useState(null);
-  //Get the method which will be used to join the meeting.
-  //We will also get the participants list to display all participants
   const { join, participants } = useMeeting({
-    //callback for when meeting is joined successfully
     onMeetingJoined: () => {
       setJoined("JOINED");
     },
-    //callback for when meeting is left
     onMeetingLeft: () => {
       props.onMeetingLeave();
     },
   });
+
   const joinMeeting = () => {
     setJoined("JOINING");
     join();
   };
 
   return (
-    <div className="container flex flex-col h-[100vh] justify-center items-center ">
-      <h3 className="bg-green-600 rounded-md text-white p-10 text-2xl font-bold">Meeting Id: {props.meetingId}</h3>
-      {joined && joined == "JOINED" ? (
-        <div className="flex flex-col">
+    <div className="flex flex-col items-center justify-center h-[100vh]">
+      {/* Back button */}
+      <button
+        onClick={() => props.setCalling(false)} // Go back to chat or previous screen
+        className="text-blue-600 text-xl my-2 font-extrabold"
+      >
+        Back to chat
+      </button>
+
+      <h3 className="bg-green-600 rounded-md text-white p-5 text-xl font-bold">
+        Meeting Id: {props.meetingId}
+      </h3>
+
+      {joined && joined === "JOINED" ? (
+        <div className="flex flex-col items-center">
           <Controls />
-          {[...participants.keys()].map((participantId) => (
-            <ParticipantView
-              participantId={participantId}
-              key={participantId}
-            />
-          ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10 justify-center">
+            {[...participants.keys()].map((participantId) => (
+              <div
+                key={participantId}
+                className="flex-shrink-0 w-[500px] h-[550px] border rounded-lg shadow-lg p-4 bg-white"
+              >
+                <ParticipantView participantId={participantId} />
+              </div>
+            ))}
+          </div>
         </div>
-      ) : joined && joined == "JOINING" ? (
+      ) : joined && joined === "JOINING" ? (
         <p>Joining the meeting...</p>
       ) : (
-        <button className="bg-blue-500 mt-5 px-10 py-3 rounded-full" onClick={joinMeeting}>Join</button>
+        <button
+          className="bg-blue-500 mt-5 px-10 py-3 rounded-full text-white font-bold"
+          onClick={joinMeeting}
+        >
+          Join
+        </button>
       )}
     </div>
   );
 }
 
-function VideoCall({user, setCalling}) {
+function VideoCall({ user, setCalling }) {
   const [meetingId, setMeetingId] = useState(null);
 
-  //Getting the meeting id by calling the api we just wrote
   const getMeetingAndToken = async (id) => {
     const meetingId =
       id == null ? await createMeeting({ token: authToken }) : id;
     setMeetingId(meetingId);
   };
 
-  //This will set Meeting Id to null when meeting is left or ended
   const onMeetingLeave = () => {
     setMeetingId(null);
   };
@@ -176,11 +200,12 @@ function VideoCall({user, setCalling}) {
       }}
       token={authToken}
     >
-      <MeetingView meetingId={meetingId} onMeetingLeave={onMeetingLeave} />
+      <MeetingView meetingId={meetingId} onMeetingLeave={onMeetingLeave} setCalling={setCalling} />
     </MeetingProvider>
   ) : (
-    <JoinScreen getMeetingAndToken={getMeetingAndToken} setCalling={setCalling}/>
+    <JoinScreen getMeetingAndToken={getMeetingAndToken} setCalling={setCalling} />
   );
 }
+
 
 export default VideoCall;

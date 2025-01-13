@@ -14,8 +14,7 @@ const GuardianSidebar = () => {
     { id: 3, path: "/guardian/consultations", name: "Consultations", icon: FaRegCalendarAlt },
     { id: 4, path: "/guardian/patients", name: "Patients", icon: FaUser },
     { id: 5, path: "/guardian/chat", name: "Chat", icon: LuMessageSquare },
-    { id: 6, path: "/guardian/notifications", name: "Notifications", icon: IoIosNotificationsOutline },
-    { id: 7, path: "/guardian/profile", name: "Profile", icon: FaUserCircle },
+    { id: 6, path: "/guardian/profile", name: "Profile", icon: FaUserCircle },
   ];
 
   const handleLinkClick = (id) => {

@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,  } from "react";
+import { useNavigate } from 'react-router-dom';
+import { IoArrowBack } from 'react-icons/io5';
 import axios from "axios";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -10,6 +12,7 @@ const GuardianMyCalendar = () => {
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [modalData, setModalData] = useState(null);
+  const navigate = useNavigate();
 
   const fetchMarkedDates = async () => {
     try {
@@ -58,6 +61,8 @@ const GuardianMyCalendar = () => {
     return null;
   };
 
+  const handleBack = () => navigate(-1); // Navigate back
+
   const handleDateClick = (date) => {
     const formattedDate = moment(date).format("YYYY-MM-DD");
     const data = markedDates[formattedDate];
@@ -76,7 +81,14 @@ const GuardianMyCalendar = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-white">
+    <div className="relative flex flex-col items-center justify-center min-h-screen p-6 bg-white">
+      <button
+        onClick={handleBack}
+        aria-label="Go back"
+        className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded-full shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        <IoArrowBack className="text-lg" />
+      </button> 
       <h2 className="text-3xl font-bold text-green-700 mb-5">Pediatrician's Availability</h2>
       <p className="text-xl text-gray-500">View pediatrician schedules below</p>
       <div className="mt-8">

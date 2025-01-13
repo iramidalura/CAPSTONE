@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import moment from 'moment'; // Import moment.js
 
 const AdminConsultations = () => {
   const [consultations, setConsultations] = useState([]);
@@ -136,9 +137,11 @@ const AdminConsultations = () => {
               <tr key={consultation.consultationId} className="border-b hover:bg-green-50">
                 <td className="px-6 py-4">{consultation.patientFullName}</td>
                 <td className="px-6 py-4">{consultation.guardianFullName}</td>
-                <td className="px-6 py-4">{consultation.date}</td>
                 <td className="px-6 py-4">
-                  {consultation.timeStart} - {consultation.timeEnd}
+                  {moment(consultation.date).format('MMMM Do YYYY')} {/* Format the date */}
+                </td>
+                <td className="px-6 py-4">
+                  {moment(consultation.timeStart, 'HH:mm').format('hh:mm A')} - {moment(consultation.timeEnd, 'HH:mm').format('hh:mm A')}
                 </td>
                 <td className="px-6 py-4">
                   <span

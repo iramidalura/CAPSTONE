@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
 
 const Profile = () => {
@@ -8,6 +9,7 @@ const Profile = () => {
     lastName: '',
     contact: '',
     clinicAddress: '',
+    specialization: '', // Add specialization to the state
   });
   const [profileImage, setProfileImage] = useState('');
   const [originalProfileImage, setOriginalProfileImage] = useState('');
@@ -15,6 +17,8 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate(); // Hook for navigation
 
   // Fetch pediatrician data
   const fetchPediatricianData = async () => {
@@ -32,6 +36,7 @@ const Profile = () => {
         lastName: pediatricianData.lastname,
         contact: pediatricianData.contact,
         clinicAddress: pediatricianData.clinicAddress,
+        specialization: pediatricianData.specialization || '', // Handle specialization
       });
 
       if (pediatricianData.profileImage) {
@@ -91,6 +96,7 @@ const Profile = () => {
       updatedFormData.append('lastName', formData.lastName);
       updatedFormData.append('contact', formData.contact);
       updatedFormData.append('clinicAddress', formData.clinicAddress);
+      updatedFormData.append('specialization', formData.specialization); // Add specialization to the form data
 
       if (profileImage && profileImage !== originalProfileImage) {
         updatedFormData.append('profileImage', profileImage);
@@ -117,6 +123,7 @@ const Profile = () => {
         lastName: updatedProfile.lastname,
         contact: updatedProfile.contact,
         clinicAddress: updatedProfile.clinicAddress,
+        specialization: updatedProfile.specialization, // Handle specialization update
       });
       setProfileImage(`http://localhost:5000${updatedProfile.profileImage}`);
       setOriginalProfileImage(`http://localhost:5000${updatedProfile.profileImage}`);
@@ -127,6 +134,12 @@ const Profile = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove token from localStorage
+    navigate('/login'); // Redirect to login page
   };
 
   if (loading) return <div>Loading...</div>;
@@ -232,6 +245,39 @@ const Profile = () => {
               className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
             />
           </div>
+          <div>
+            <label className="block text-gray-600 font-semibold">Specialization:</label>
+            <input
+              type="text"
+              name="specialization"
+              value={formData.specialization}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
+            />
+          </div>
+        </div>
+
+        {/* About Us Section */}
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600">
+          <h3 className="font-semibold text-xl text-green-900">About Us</h3>
+          <p className="mt-2 text-gray-700">Learn more about KiddieCare.</p>
+          <Link to="/guardian/about-us">
+            <button className="mt-4 bg-green-600 text-white py-2 px-6 rounded hover:bg-green-800 transition duration-300">
+              Go to About Us
+            </button>
+          </Link>
+        </div>
+
+        {/* Logout */}
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600 mt-6">
+          <h3 className="font-semibold text-xl text-green-900">Logout</h3>
+          <button
+            onClick={handleLogout}
+            className="mt-4 bg-red-600 text-white py-2 px-6 rounded hover:bg-red-800 transition duration-300"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>

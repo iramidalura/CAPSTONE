@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; 
 import axios from 'axios';
 
 const GuardianProfile = () => {
@@ -63,6 +64,11 @@ const GuardianProfile = () => {
     setIsEditing(false);
     setProfileImage(originalProfileImage);
     fetchGuardianData();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove the token or any stored user data
+    window.location.href = '/login'; // Redirect the user to the login page
   };
 
   const handleImageChange = (e) => {
@@ -234,6 +240,27 @@ const GuardianProfile = () => {
               className={`w-full border p-2 rounded-lg ${isEditing ? 'bg-gray-50' : 'bg-transparent'}`}
             />
           </div>
+           {/* About Us */}
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600">
+          <h3 className="font-semibold text-xl text-green-900">About Us</h3>
+          <p className="mt-2 text-gray-700">Learn more about KiddieCare.</p>
+          <Link to="/guardian/about-us">
+            <button className="mt-4 bg-green-600 text-white py-2 px-6 rounded hover:bg-green-800 transition duration-300">
+              Go to About Us
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Logout */}
+      <div className="bg-white p-6 rounded-lg shadow border-l-4 border-green-600">
+        <h3 className="font-semibold text-xl text-green-900">Logout</h3>
+        <button
+          onClick={handleLogout}
+          className="mt-4 bg-red-600 text-white py-2 px-6 rounded hover:bg-red-800 transition duration-300"
+        >
+          Logout
+        </button>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ const socket = io('http://localhost:5000');
 
 const GuardianChat = () => {
   const [messages, setMessages] = useState([]);
-  const [incomingCall, setIncomingCall] = useState(true);
+  const [incomingCall, setIncomingCall] = useState(false);
   const [newMessage, setNewMessage] = useState('');
 
   const dta = localStorage.getItem('token')

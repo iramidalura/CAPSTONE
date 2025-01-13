@@ -1,12 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import teamLeaderImage from '../../assets/jhorne.jpg';
 import frontendDevImage from '../../assets/lessa.jpg';
 import backendDevImage from '../../assets/jhorne.jpg';
 import researcherImage from '../../assets/era.jpg';
 
 const GuardianAboutUs = () => {
+  const navigate = useNavigate(); // Initialize navigate
+
+  const handleBack = () => navigate(-1); // Navigate back
+
   return (
-    <div className="flex flex-col items-center bg-green-50 min-h-screen py-10 px-6">
+    <div className="flex flex-col items-center bg-green-50 min-h-screen py-10 px-6 relative">
+      {/* Back Button */}
+      <button
+        onClick={handleBack}
+        aria-label="Go back"
+        className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center bg-green-600 text-white rounded-full shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        <span className="text-xl font-bold">&larr;</span>
+      </button>
+
       <h1 className="text-4xl font-extrabold text-green-700 mb-6 text-center">About Us</h1>
       <p className="text-xl text-gray-700 max-w-4xl text-center mb-8 leading-relaxed">
         Welcome to KiddieCare, your trusted partner in pediatric health! Our mission is to provide exceptional online consultation and appointment management services for guardians and pediatricians. We understand that children’s health is a priority, and we are here to ensure that every consultation is accessible, safe, and efficient.

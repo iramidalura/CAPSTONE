@@ -68,6 +68,9 @@ const getMarkedDates = (req, res) => {
   } else if (userRole === "Guardian") {
     query = `SELECT date, status, timeSlots, name, email FROM availability`;
     params = [];
+  } else if (userRole === "Admin") {
+    query = `SELECT date, status, timeSlots, name, email FROM availability`;
+    params = [];
   } else {
     console.log("Unauthorized role:", userRole); // Log unauthorized access
     return res.status(403).json({ message: "Unauthorized role" });

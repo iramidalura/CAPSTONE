@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { IoArrowBack } from "react-icons/io5"; // Import the back arrow icon
 import axios from "axios";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -23,6 +25,12 @@ const MyCalendar = () => {
     "10:00 AM - 11:00 AM",
     "11:00 AM - 12:00 PM",
   ]);
+
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  const handleBack = () => {
+    navigate(-1); // Navigate to the previous page
+  };
 
   // Fetch marked dates
   const fetchMarkedDates = async () => {
@@ -156,7 +164,16 @@ const MyCalendar = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-white">
+    <div className="relative flex flex-col items-center justify-center min-h-screen p-6 bg-white">
+      {/* Back Button */}
+      <button
+        onClick={handleBack}
+        aria-label="Go back"
+        className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <IoArrowBack className="text-lg" />
+      </button>
+
       <h2 className="text-3xl font-bold text-green-700">Calendar</h2>
       <p className="text-xl text-gray-500">View and Click the Date to Set Availability</p>
       <div className="mt-8">
@@ -168,87 +185,104 @@ const MyCalendar = () => {
       </div>
 
       {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="relative w-full max-w-md p-4 bg-white rounded-lg shadow-lg">
-            <h2 className="text-lg font-semibold text-gray-700">
-              Set Availability for {selectedDate}
-            </h2>
-            <form onSubmit={handleFormSubmit}>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">Name</label>
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div className="relative w-full max-w-md p-4 bg-white rounded-lg shadow-lg">
+      <h2 className="text-lg font-semibold text-gray-700">
+        Set Availability for {selectedDate}
+      </h2>
+      <form onSubmit={handleFormSubmit}>
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            Name
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            disabled
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            disabled
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">
+            Time Slots
+          </label>
+          <div className="mt-2 space-y-2">
+            {availableSlots.map((slot) => (
+              <div key={slot} className="flex items-center">
                 <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm"
-                  readOnly
+                  type="checkbox"
+                  id={slot}
+                  checked={formData.timeSlots.includes(slot)}
+                  onChange={() => handleTimeSlotChange(slot)}
+                  className="mr-2"
                 />
+                <label htmlFor={slot} className="text-sm text-gray-600">
+                  {slot}
+                </label>
               </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm"
-                  readOnly
-                />
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">Select Time Slots</label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {availableSlots.map((slot, index) => (
-                    <label key={index} className="flex items-center space-x-2 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        value={slot}
-                        checked={formData.timeSlots.includes(slot)}
-                        onChange={() => handleTimeSlotChange(slot)}
-                        className="form-checkbox"
-                      />
-                      <span>{slot}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm"
-                  required
-                >
-                  <option value="available">Available</option>
-                  <option value="not_available">Not Available</option>
-                </select>
-              </div>
-              <div className="mt-6 flex justify-end">
-                <button
-                  type="button"
-                  className="px-4 py-2 mr-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
+            ))}
           </div>
         </div>
-      )}
+
+        <div className="mb-4">
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          >
+            <option value="available">Available</option>
+            <option value="not_available">Not Available</option>
+          </select>
+        </div>
+
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(false)}
+            className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

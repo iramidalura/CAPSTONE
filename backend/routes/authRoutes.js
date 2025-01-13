@@ -10,12 +10,17 @@ const { requestConsultation, getConsultationsForAdmin, updateConsultationStatus,
 const { postAvailability, getMarkedDates } = require('../controllers/availabilityController');
 const { getPatientData, updatePatientData } = require('../controllers/patientController');
 const { verifyRole } = require('../middleware/authMiddleware');
-const { getUserData, getListUser, getConverstation, getMessages, sendMessage, getPediatricianProfile, updatePediatricianProfile } = require('../controllers/pediatricianController')
+const { getUserData, getListUser, getConverstation, getMessages, sendMessage} = require('../controllers/pediatricianController')
 const { getGuardianProfile, updateGuardianProfile, getGuardianMessages, guardianSendMessage, createConversation, sendNewMessage } = require('../controllers/guardianController')
 const upload = require('../middleware/multerMiddleware');
+const { getPediatricianProfile, updatePediatricianProfile } = require('../controllers/pediatricians');
+
 // const { manageAppointmentRequest, getAppointmentRequests } = require('../controllers/adminController');
 
 const router = express.Router();
+
+router.get('/pediatrician-get-profile', verifyRole(['Pediatrician']), getPediatricianProfile); 
+router.put('/pediatrician-update-profile', verifyRole(['Pediatrician']), upload.single('profileImage'), updatePediatricianProfile); 
 
 router.post('/register', registerUser); 
 router.post('/login', loginUser); 
@@ -65,11 +70,8 @@ router.post('/send-new-msg', verifyRole(['Guardian']), sendNewMessage);
 router.get('/guardian-get-profile', verifyRole(['Guardian']), getGuardianProfile); 
 router.put('/guardian-update-profile', verifyRole(['Guardian']), upload.single('profileImage'), updateGuardianProfile); 
 
-router.get('/marked-dates', verifyRole(['Guardian', 'Pediatrician']), getMarkedDates);
+router.get('/marked-dates', verifyRole(['Guardian', 'Pediatrician', 'Admin']), getMarkedDates);
 router.post('/pedia-send-msg', verifyRole(['Guardian', 'Pediatrician']), sendMessage);
-
-router.get('/pediatrician-get-profile', verifyRole(['Pediatrician']), getPediatricianProfile); 
-router.put('/pediatrician-update-profile', verifyRole(['Pediatrician']), upload.single('profileImage'), updatePediatricianProfile); 
 
 
 router.get('/user-data', verifyRole(['Pediatrician']), getUserData);
