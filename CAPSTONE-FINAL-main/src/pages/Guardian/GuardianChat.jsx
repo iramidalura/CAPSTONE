@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import  VideoCallModal  from './VideoCallModal';
 import VideoCall from '../Pediatrician/VideoCall';
 
-const socket = io('${process.env.API_BASE_URL}');
+const socket = io('${import.meta.env.VITE_API_BASE_URL}');
 
 const GuardianChat = () => {
   const [messages, setMessages] = useState([]);
@@ -24,7 +24,7 @@ const GuardianChat = () => {
   },[])
 
   useEffect(() => {
-    axios.get(`${process.env.API_BASE_URL}/api/guardian-msg/${user_data.id}`,{
+    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/guardian-msg/${user_data.id}`,{
         headers: { 'Authorization': `Bearer ${dta}`}
     })
         .then(res => {
@@ -52,7 +52,7 @@ const GuardianChat = () => {
       const content = newMessage
     
       if(conversation_id > 0) {
-        axios.post(`${process.env.API_BASE_URL}/api/guardian-send-msg/`,{
+        axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/guardian-send-msg/`,{
         conversation_id,
         sender_id,
         content
@@ -68,12 +68,12 @@ const GuardianChat = () => {
       }
 
       if(conversation_id === undefined) {
-        axios.post(`${process.env.API_BASE_URL}/api/create-conversation`, {
+        axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/create-conversation`, {
           participant_1: sender_id,
         }, {headers: { 'Authorization': `Bearer ${dta}`}
         }).then((res) => {
           const {id} = res.data;
-          axios.post(`${process.env.API_BASE_URL}/api/send-new-msg`, {
+          axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/send-new-msg`, {
             conversation_id: id,
             sender_id,
             content

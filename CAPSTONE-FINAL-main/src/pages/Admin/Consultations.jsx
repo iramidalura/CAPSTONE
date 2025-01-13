@@ -13,7 +13,7 @@ const AdminConsultations = () => {
   useEffect(() => {
     const fetchConsultations = async () => {
       try {
-        const response = await axios.get('${process.env.API_BASE_URL}/api/consultations-get', {
+        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/consultations-get', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultations(response.data.consultations);
@@ -30,7 +30,7 @@ const AdminConsultations = () => {
   const handleStatusChange = async (consultationId, status) => {
     try {
       await axios.put(
-        '${process.env.API_BASE_URL}/api/consultations-admin',
+        '${import.meta.env.VITE_API_BASE_URL}/api/consultations-admin',
         { consultationId, status },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );  

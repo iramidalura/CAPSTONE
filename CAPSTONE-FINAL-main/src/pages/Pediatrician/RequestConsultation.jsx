@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = '${process.env.API_BASE_URL}/api/consultations'; // Replace with your Django backend URL if different
+const API_BASE_URL = '${import.meta.env.VITE_API_BASE_URL}/api/consultations'; // Replace with your Django backend URL if different
 
 const RequestConsultation = () => {
   const [formData, setFormData] = useState({ name: '', email: '', date: '', time: '' });

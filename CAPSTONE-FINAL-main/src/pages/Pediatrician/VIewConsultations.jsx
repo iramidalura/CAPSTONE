@@ -15,7 +15,7 @@ const PediatricianViewConsultation = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${process.env.API_BASE_URL}/api/get-consultation-details-for-pediatrician/${consultationId}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/get-consultation-details-for-pediatrician/${consultationId}`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           }

@@ -25,7 +25,7 @@ const Profile = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('${process.env.API_BASE_URL}/api/pediatrician-get-profile', {
+      const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/pediatrician-get-profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -40,8 +40,8 @@ const Profile = () => {
       });
 
       if (pediatricianData.profileImage) {
-        setProfileImage(`${process.env.API_BASE_URL}${pediatricianData.profileImage}`);
-        setOriginalProfileImage(`${process.env.API_BASE_URL}${pediatricianData.profileImage}`);
+        setProfileImage(`${import.meta.env.VITE_API_BASE_URL}${pediatricianData.profileImage}`);
+        setOriginalProfileImage(`${import.meta.env.VITE_API_BASE_URL}${pediatricianData.profileImage}`);
       }
     } catch (err) {
       console.error('Error fetching pediatrician data:', err);
@@ -103,7 +103,7 @@ const Profile = () => {
       }
 
       const response = await axios.put(
-        '${process.env.API_BASE_URL}/api/pediatrician-update-profile',
+        '${import.meta.env.VITE_API_BASE_URL}/api/pediatrician-update-profile',
         updatedFormData,
         {
           headers: {
@@ -125,8 +125,8 @@ const Profile = () => {
         clinicAddress: updatedProfile.clinicAddress,
         specialization: updatedProfile.specialization, // Handle specialization update
       });
-      setProfileImage(`${process.env.API_BASE_URL}${updatedProfile.profileImage}`);
-      setOriginalProfileImage(`${process.env.API_BASE_URL}${updatedProfile.profileImage}`);
+      setProfileImage(`${import.meta.env.VITE_API_BASE_URL}${updatedProfile.profileImage}`);
+      setOriginalProfileImage(`${import.meta.env.VITE_API_BASE_URL}${updatedProfile.profileImage}`);
       setIsEditing(false);
     } catch (err) {
       console.error('Error saving pediatrician data:', err);

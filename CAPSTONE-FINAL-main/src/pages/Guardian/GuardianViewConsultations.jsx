@@ -15,7 +15,7 @@ const GuardianViewConsultation = () => {
     const fetchConsultationDetails = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${process.env.API_BASE_URL}/api/get-consultation-details/${consultationId}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/get-consultation-details/${consultationId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultation(response.data);
@@ -35,7 +35,7 @@ const GuardianViewConsultation = () => {
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this consultation?')) {
       try {
-        await axios.delete(`${process.env.API_BASE_URL}/api/consultations/${consultationId}`, {
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/consultations/${consultationId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         alert('Consultation deleted successfully.');

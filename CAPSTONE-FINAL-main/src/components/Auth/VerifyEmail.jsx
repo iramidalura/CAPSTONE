@@ -15,7 +15,7 @@ const VerifyEmail = () => {
       return;
     }
 
-    axios.get(`${process.env.API_BASE_URL}/api/verify-email?token=${token}`)
+    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/verify-email?token=${token}`)
       .then((response) => {
         setMessage(response.data.message);
         setTimeout(() => navigate('/login'), 3000); // Redirect to login page after 3 seconds

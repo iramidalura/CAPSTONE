@@ -5,7 +5,7 @@ import { useState } from 'react';
 import io from 'socket.io-client';
 import VideoCall from './VideoCall';
 
-const socket = io('${process.env.API_BASE_URL}');
+const socket = io('${import.meta.env.VITE_API_BASE_URL}');
 
 const Chat = () => {
     const [newMessage, setNewMessage] = useState();
@@ -20,7 +20,7 @@ const Chat = () => {
     const user_data = jwtDecode(dta);
 
     useEffect(() => {
-        axios.get(`${process.env.API_BASE_URL}/api/conversation/${user_data.id}`, {
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/conversation/${user_data.id}`, {
             headers: { 'Authorization': `Bearer ${dta}` }
         })
             .then(res => {
@@ -47,7 +47,7 @@ const Chat = () => {
 
     useEffect(() => {
         if (receiver) {
-            axios.get(`${process.env.API_BASE_URL}/api/messages/${receiver.conversation_id}`, {
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/messages/${receiver.conversation_id}`, {
                 headers: { 'Authorization': `Bearer ${dta}` }
             })
                 .then(res => {
@@ -68,7 +68,7 @@ const Chat = () => {
         const content = message;
         const sender_id = user_data.id;
 
-        axios.post(`${process.env.API_BASE_URL}/api/pedia-send-msg`, {
+        axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/pedia-send-msg`, {
             sender_id,
             conversation_id,
             content

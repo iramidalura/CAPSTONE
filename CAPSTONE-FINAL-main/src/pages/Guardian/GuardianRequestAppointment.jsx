@@ -70,7 +70,7 @@ const GuardianRequestAppointment = () => {
         const userEmail = decoded.email;
 
         const response = await axios.get(
-          `${process.env.API_BASE_URL}/api/guardian-patient/${userEmail}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/guardian-patient/${userEmail}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -88,7 +88,7 @@ const GuardianRequestAppointment = () => {
 
     const fetchAvailableDates = async () => {
       try {
-        const response = await axios.get("${process.env.API_BASE_URL}/api/marked-dates", {
+        const response = await axios.get("${import.meta.env.VITE_API_BASE_URL}/api/marked-dates", {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAvailableDates(response.data);
@@ -175,7 +175,7 @@ const GuardianRequestAppointment = () => {
   
       console.log("Submitting payload:", payload);
   
-      await axios.post('http://localhost:5000/api/appointments/', payload, {
+      await axios.post('${import.meta.env.VITE_API_BASE_URL}/api/appointments/', payload, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
   

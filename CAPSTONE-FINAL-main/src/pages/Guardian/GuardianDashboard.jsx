@@ -21,7 +21,7 @@ const GuardianDashboard = () => {
         console.log('Token:', token); // Log the token for debugging
 
         // Fetch upcoming appointments
-        const appointmentsResponse = await axios.get('${process.env.API_BASE_URL}/api/get-upcoming-appointments', {
+        const appointmentsResponse = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-upcoming-appointments', {
           headers: {
             Authorization: `Bearer ${token}`, // Attach the token to the request
           },
@@ -52,7 +52,7 @@ const GuardianDashboard = () => {
         }
 
         // Fetch upcoming consultations
-        const consultationsResponse = await axios.get('${process.env.API_BASE_URL}/api/get-upcoming-consultations', {
+        const consultationsResponse = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-upcoming-consultations', {
           headers: {
             Authorization: `Bearer ${token}`, // Attach the token to the request
           },

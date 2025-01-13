@@ -12,7 +12,7 @@ const Patients = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get('${process.env.API_BASE_URL}/api/patients');
+        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/patients');
         setPatients(response.data);
       } catch (error) {
         console.error('Failed to fetch patients:', error);

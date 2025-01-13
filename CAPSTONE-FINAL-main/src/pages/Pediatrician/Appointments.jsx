@@ -15,7 +15,7 @@ const Appointments = () => {
     const fetchAppointments = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('${process.env.API_BASE_URL}/api/get-appointments-for-pediatrician', {
+        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-appointments-for-pediatrician', {
           headers: {
             Authorization: `Bearer ${token}`, // Include the token in the request
           },

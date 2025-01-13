@@ -19,7 +19,7 @@ const GuardianViewPatient = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${process.env.API_BASE_URL}/api/patient/${email}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/patient/${email}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -66,7 +66,7 @@ const GuardianViewPatient = () => {
   const handleSavePatient = async (patientId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${process.env.API_BASE_URL}/api/patient/${patientId}`, editedPatientData, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/patient/${patientId}`, editedPatientData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -94,7 +94,7 @@ const RegistrationPage = () => {
 
     try {
       // Assuming your backend is running on localhost:5000
-      const response = await axios.post('${process.env.API_BASE_URL}/api/register', userData);
+      const response = await axios.post('${import.meta.env.VITE_API_BASE_URL}/api/register', userData);
 
       if (response.status === 201) {
         alert('Registration successful');

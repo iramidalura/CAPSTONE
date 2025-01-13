@@ -42,7 +42,7 @@ const GuardianRegisterPatient = () => {
       const guardianEmail = localStorage.getItem('email');
 
       const response = await axios.post(
-        '${process.env.API_BASE_URL}/api/patient/register',
+        '${import.meta.env.VITE_API_BASE_URL}/api/patient/register',
         { ...patientDetails, guardianEmail },
         {
           headers: {

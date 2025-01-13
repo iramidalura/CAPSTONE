@@ -15,7 +15,7 @@ const GuardianViewAppointment = () => {
     const fetchAppointmentDetails = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${process.env.API_BASE_URL}/api/get-appointments/${appointmentId}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/get-appointments/${appointmentId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAppointment(response.data);
@@ -35,7 +35,7 @@ const GuardianViewAppointment = () => {
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this appointment?')) {
       try {
-        await axios.delete(`${process.env.API_BASE_URL}/api/appointments/${appointmentId}`, {
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/appointments/${appointmentId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         alert('Appointment deleted successfully.');
