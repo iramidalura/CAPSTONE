@@ -69,7 +69,7 @@ const GuardianRequestConsultation = () => {
         const userEmail = decoded.email;
 
         const response = await axios.get(
-          `http://capstone-production-bd9d.up.railway.app/api/guardian-patient/${userEmail}`,
+          `${process.env.API_BASE_URL}/api/guardian-patient/${userEmail}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -92,7 +92,7 @@ const GuardianRequestConsultation = () => {
 
     const fetchAvailableDates = async () => {
       try {
-        const response = await axios.get("http://capstone-production-bd9d.up.railway.app/api/marked-dates", {
+        const response = await axios.get("${process.env.API_BASE_URL}/api/marked-dates", {
           headers: { Authorization: `Bearer ${token}` },
         });
 

@@ -21,7 +21,7 @@ const GuardianDashboard = () => {
         console.log('Token:', token); // Log the token for debugging
 
         // Fetch upcoming appointments
-        const appointmentsResponse = await axios.get('http://capstone-production-bd9d.up.railway.app/api/get-upcoming-appointments', {
+        const appointmentsResponse = await axios.get('${process.env.API_BASE_URL}/api/get-upcoming-appointments', {
           headers: {
             Authorization: `Bearer ${token}`, // Attach the token to the request
           },
@@ -52,7 +52,7 @@ const GuardianDashboard = () => {
         }
 
         // Fetch upcoming consultations
-        const consultationsResponse = await axios.get('http://capstone-production-bd9d.up.railway.app/api/get-upcoming-consultations', {
+        const consultationsResponse = await axios.get('${process.env.API_BASE_URL}/api/get-upcoming-consultations', {
           headers: {
             Authorization: `Bearer ${token}`, // Attach the token to the request
           },

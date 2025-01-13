@@ -13,7 +13,7 @@ const AdminConsultations = () => {
   useEffect(() => {
     const fetchConsultations = async () => {
       try {
-        const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/consultations-get', {
+        const response = await axios.get('${process.env.API_BASE_URL}/api/consultations-get', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultations(response.data.consultations);
@@ -30,7 +30,7 @@ const AdminConsultations = () => {
   const handleStatusChange = async (consultationId, status) => {
     try {
       await axios.put(
-        'http://capstone-production-bd9d.up.railway.app/api/consultations-admin',
+        '${process.env.API_BASE_URL}/api/consultations-admin',
         { consultationId, status },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );  

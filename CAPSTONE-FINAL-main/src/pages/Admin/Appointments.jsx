@@ -13,7 +13,7 @@ const AdminAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/appointments-get', {
+        const response = await axios.get('${process.env.API_BASE_URL}/api/appointments-get', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAppointments(response.data.appointments);

@@ -25,7 +25,7 @@ const Profile = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/pediatrician-get-profile', {
+      const response = await axios.get('${process.env.API_BASE_URL}/api/pediatrician-get-profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -40,8 +40,8 @@ const Profile = () => {
       });
 
       if (pediatricianData.profileImage) {
-        setProfileImage(`http://capstone-production-bd9d.up.railway.app${pediatricianData.profileImage}`);
-        setOriginalProfileImage(`http://capstone-production-bd9d.up.railway.app${pediatricianData.profileImage}`);
+        setProfileImage(`${process.env.API_BASE_URL}${pediatricianData.profileImage}`);
+        setOriginalProfileImage(`${process.env.API_BASE_URL}${pediatricianData.profileImage}`);
       }
     } catch (err) {
       console.error('Error fetching pediatrician data:', err);
@@ -103,7 +103,7 @@ const Profile = () => {
       }
 
       const response = await axios.put(
-        'http://capstone-production-bd9d.up.railway.app/api/pediatrician-update-profile',
+        '${process.env.API_BASE_URL}/api/pediatrician-update-profile',
         updatedFormData,
         {
           headers: {
@@ -125,8 +125,8 @@ const Profile = () => {
         clinicAddress: updatedProfile.clinicAddress,
         specialization: updatedProfile.specialization, // Handle specialization update
       });
-      setProfileImage(`http://capstone-production-bd9d.up.railway.app${updatedProfile.profileImage}`);
-      setOriginalProfileImage(`http://capstone-production-bd9d.up.railway.app${updatedProfile.profileImage}`);
+      setProfileImage(`${process.env.API_BASE_URL}${updatedProfile.profileImage}`);
+      setOriginalProfileImage(`${process.env.API_BASE_URL}${updatedProfile.profileImage}`);
       setIsEditing(false);
     } catch (err) {
       console.error('Error saving pediatrician data:', err);

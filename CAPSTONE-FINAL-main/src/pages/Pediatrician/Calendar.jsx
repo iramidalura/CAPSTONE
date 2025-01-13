@@ -42,7 +42,7 @@ const MyCalendar = () => {
           console.error("Token expired");
         }
       }
-      const response = await axios.get("http://localhost:5000/api/marked-dates", {
+      const response = await axios.get("${process.env.API_BASE_URL}/api/marked-dates", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data && typeof response.data === "object") {
@@ -61,7 +61,7 @@ const MyCalendar = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://capstone-production-bd9d.up.railway.app/api/user-data", {
+        const response = await axios.get("${process.env.API_BASE_URL}/api/user-data", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         const { name, email } = response.data;

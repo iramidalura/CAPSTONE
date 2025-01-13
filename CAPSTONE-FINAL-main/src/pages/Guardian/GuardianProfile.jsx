@@ -22,7 +22,7 @@ const GuardianProfile = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/guardian-get-profile', {
+      const response = await axios.get('${process.env.API_BASE_URL}/api/guardian-get-profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -36,8 +36,8 @@ const GuardianProfile = () => {
       });
 
       if (guardianData.profileImage) {
-        setProfileImage(`http://capstone-production-bd9d.up.railway.app${guardianData.profileImage}`);
-        setOriginalProfileImage(`http://capstone-production-bd9d.up.railway.app${guardianData.profileImage}`);
+        setProfileImage(`${process.env.API_BASE_URL}${guardianData.profileImage}`);
+        setOriginalProfileImage(`${process.env.API_BASE_URL}${guardianData.profileImage}`);
       }
     } catch (err) {
       console.error('Error fetching guardian data:', err);
@@ -103,7 +103,7 @@ const GuardianProfile = () => {
       }
   
       const response = await axios.put(
-        'http://capstone-production-bd9d.up.railway.app/api/guardian-update-profile',
+        '${process.env.API_BASE_URL}/api/guardian-update-profile',
         updatedFormData,
         {
           headers: {
@@ -124,8 +124,8 @@ const GuardianProfile = () => {
         contact: updatedProfile.contact,
         guardianAddress: updatedProfile.guardianAddress,
       });
-      setProfileImage(`http://capstone-production-bd9d.up.railway.app${updatedProfile.profileImage}`);
-      setOriginalProfileImage(`http://capstone-production-bd9d.up.railway.app${updatedProfile.profileImage}`);
+      setProfileImage(`${process.env.API_BASE_URL}${updatedProfile.profileImage}`);
+      setOriginalProfileImage(`${process.env.API_BASE_URL}${updatedProfile.profileImage}`);
       setIsEditing(false);
     } catch (err) {
       console.error('Error saving guardian data:', err);
