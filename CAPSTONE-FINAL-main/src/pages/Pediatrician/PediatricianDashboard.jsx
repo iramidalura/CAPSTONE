@@ -19,7 +19,7 @@ const PediatricianDashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:5000/api/get-appointments-for-pediatrician",
+          "http://capstone-production-bd9d.up.railway.app/api/get-appointments-for-pediatrician",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ const PediatricianDashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:5000/api/get-consultations-for-pediatrician",
+          "http://capstone-production-bd9d.up.railway.app/api/get-consultations-for-pediatrician",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -90,7 +90,7 @@ const PediatricianDashboard = () => {
     const fetchMarkedDates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/marked-dates",
+          "http://capstone-production-bd9d.up.railway.app/api/marked-dates",
           {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }

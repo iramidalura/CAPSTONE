@@ -2,7 +2,7 @@ import React, { createContext, useState, useRef, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import Peer from 'simple-peer';
 
-const socket = io('http://localhost:5000');
+const socket = io('http://capstone-production-bd9d.up.railway.app');
 // const socket = io('https://warm-wildwood-81069.herokuapp.com/');
 
 // Create the SocketContext

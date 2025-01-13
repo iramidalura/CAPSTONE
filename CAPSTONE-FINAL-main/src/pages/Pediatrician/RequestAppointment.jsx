@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api/appointments'; // Replace with your Django backend URL if different
+const API_BASE_URL = 'http://capstone-production-bd9d.up.railway.app/api/appointments'; // Replace with your Django backend URL if different
 
 const RequestAppointment = () => {
   const [formData, setFormData] = useState({ patient_name: '', date: '', time: '', description: '' });

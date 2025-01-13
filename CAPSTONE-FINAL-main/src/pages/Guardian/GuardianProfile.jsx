@@ -22,7 +22,7 @@ const GuardianProfile = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/guardian-get-profile', {
+      const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/guardian-get-profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -36,8 +36,8 @@ const GuardianProfile = () => {
       });
 
       if (guardianData.profileImage) {
-        setProfileImage(`http://localhost:5000${guardianData.profileImage}`);
-        setOriginalProfileImage(`http://localhost:5000${guardianData.profileImage}`);
+        setProfileImage(`http://capstone-production-bd9d.up.railway.app${guardianData.profileImage}`);
+        setOriginalProfileImage(`http://capstone-production-bd9d.up.railway.app${guardianData.profileImage}`);
       }
     } catch (err) {
       console.error('Error fetching guardian data:', err);
@@ -103,7 +103,7 @@ const GuardianProfile = () => {
       }
   
       const response = await axios.put(
-        'http://localhost:5000/api/guardian-update-profile',
+        'http://capstone-production-bd9d.up.railway.app/api/guardian-update-profile',
         updatedFormData,
         {
           headers: {
@@ -124,8 +124,8 @@ const GuardianProfile = () => {
         contact: updatedProfile.contact,
         guardianAddress: updatedProfile.guardianAddress,
       });
-      setProfileImage(`http://localhost:5000${updatedProfile.profileImage}`);
-      setOriginalProfileImage(`http://localhost:5000${updatedProfile.profileImage}`);
+      setProfileImage(`http://capstone-production-bd9d.up.railway.app${updatedProfile.profileImage}`);
+      setOriginalProfileImage(`http://capstone-production-bd9d.up.railway.app${updatedProfile.profileImage}`);
       setIsEditing(false);
     } catch (err) {
       console.error('Error saving guardian data:', err);

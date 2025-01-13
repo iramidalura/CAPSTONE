@@ -24,7 +24,7 @@ const GuardianMyCalendar = () => {
         }
       }
 
-      const response = await axios.get("http://localhost:5000/api/marked-dates", {
+      const response = await axios.get("http://capstone-production-bd9d.up.railway.app/api/marked-dates", {
         headers: { Authorization: `Bearer ${token}` },
       });
 

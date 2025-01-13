@@ -15,7 +15,7 @@ const GuardianConsultations = () => {
     const fetchConsultations = async () => {
       try {
         
-        const response = await axios.get('http://localhost:5000/api/get-consultations', {
+        const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/get-consultations', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultations(response.data.consultations);

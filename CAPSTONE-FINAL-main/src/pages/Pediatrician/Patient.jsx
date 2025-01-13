@@ -12,7 +12,7 @@ const Patients = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/patients');
+        const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/patients');
         setPatients(response.data);
       } catch (error) {
         console.error('Failed to fetch patients:', error);

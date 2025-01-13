@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import  VideoCallModal  from './VideoCallModal';
 import VideoCall from '../Pediatrician/VideoCall';
 
-const socket = io('http://localhost:5000');
+const socket = io('http://capstone-production-bd9d.up.railway.app');
 
 const GuardianChat = () => {
   const [messages, setMessages] = useState([]);
@@ -24,7 +24,7 @@ const GuardianChat = () => {
   },[])
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/guardian-msg/${user_data.id}`,{
+    axios.get(`http://capstone-production-bd9d.up.railway.app/api/guardian-msg/${user_data.id}`,{
         headers: { 'Authorization': `Bearer ${dta}`}
     })
         .then(res => {
@@ -52,7 +52,7 @@ const GuardianChat = () => {
       const content = newMessage
     
       if(conversation_id > 0) {
-        axios.post(`http://localhost:5000/api/guardian-send-msg/`,{
+        axios.post(`http://capstone-production-bd9d.up.railway.app/api/guardian-send-msg/`,{
         conversation_id,
         sender_id,
         content
@@ -68,12 +68,12 @@ const GuardianChat = () => {
       }
 
       if(conversation_id === undefined) {
-        axios.post(`http://localhost:5000/api/create-conversation`, {
+        axios.post(`http://capstone-production-bd9d.up.railway.app/api/create-conversation`, {
           participant_1: sender_id,
         }, {headers: { 'Authorization': `Bearer ${dta}`}
         }).then((res) => {
           const {id} = res.data;
-          axios.post(`http://localhost:5000/api/send-new-msg`, {
+          axios.post(`http://capstone-production-bd9d.up.railway.app/api/send-new-msg`, {
             conversation_id: id,
             sender_id,
             content

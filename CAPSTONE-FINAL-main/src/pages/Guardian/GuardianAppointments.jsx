@@ -15,7 +15,7 @@ const GuardianAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/get-appointments', {
+        const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/get-appointments', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAppointments(response.data.appointments);

@@ -15,7 +15,7 @@ const GuardianViewConsultation = () => {
     const fetchConsultationDetails = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:5000/api/get-consultation-details/${consultationId}`, {
+        const response = await axios.get(`http://capstone-production-bd9d.up.railway.app/api/get-consultation-details/${consultationId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultation(response.data);
@@ -35,7 +35,7 @@ const GuardianViewConsultation = () => {
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this consultation?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/consultations/${consultationId}`, {
+        await axios.delete(`http://capstone-production-bd9d.up.railway.app/api/consultations/${consultationId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         alert('Consultation deleted successfully.');

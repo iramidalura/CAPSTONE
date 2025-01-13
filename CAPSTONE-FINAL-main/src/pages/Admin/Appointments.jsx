@@ -13,7 +13,7 @@ const AdminAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/appointments-get', {
+        const response = await axios.get('http://capstone-production-bd9d.up.railway.app/api/appointments-get', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAppointments(response.data.appointments);
@@ -29,7 +29,7 @@ const AdminAppointments = () => {
 
   const handleStatusChange = async (appointmentId, status) => {
     try {
-      await axios.put('http://localhost:5000/api/appointments-admin', 
+      await axios.put('http://capstone-production-bd9d.up.railway.app/api/appointments-admin', 
         { appointmentId, status }, 
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );

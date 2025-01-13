@@ -4,7 +4,6 @@ import logo from '../../assets/doctor.jpg';
 import doctorImage from '../../assets/doctor.jpg';
 import axios from 'axios';
 
-
 const RegistrationPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -71,7 +70,6 @@ const RegistrationPage = () => {
       alert('Passwords do not match');
       return;
     }
-
     // Patient details validation for Guardian
     if (formData.userType === 'Guardian') {
       const requiredFields = [
@@ -88,7 +86,6 @@ const RegistrationPage = () => {
         }
       }
     }
-
     // Prepare the data to send
     const userData = {
       ...formData,
@@ -97,7 +94,7 @@ const RegistrationPage = () => {
 
     try {
       // Assuming your backend is running on localhost:5000
-      const response = await axios.post('http://localhost:5000/api/register', userData);
+      const response = await axios.post('http://capstone-production-bd9d.up.railway.app/api/register', userData);
 
       if (response.status === 201) {
         alert('Registration successful');
@@ -188,7 +185,6 @@ const RegistrationPage = () => {
                 <option value="Guardian">Guardian</option>
               </select>
             </div>
-
             {/* Guardian Fields */}
             {showGuardianFields && (
             <div className="w-full">
@@ -530,7 +526,6 @@ const RegistrationPage = () => {
             </div>
             </div>
             )}
-
             {/* Pediatrician Fields */}
             {showPediatricianFields && (
             <div className="grid grid-cols-2 gap-4">
@@ -659,9 +654,6 @@ const RegistrationPage = () => {
               </div>
             </div>
             )}
-
-            
-
             {/* Sign Up Button */}
             <button
               type="submit"

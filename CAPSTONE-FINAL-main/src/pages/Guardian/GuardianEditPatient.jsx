@@ -42,7 +42,7 @@ const GuardianEditPatient = () => {
       const guardianEmail = localStorage.getItem('email');
 
       const response = await axios.post(
-        'http://localhost:5000/api/patient/register',
+        'http://capstone-production-bd9d.up.railway.app/api/patient/register',
         { ...patientDetails, guardianEmail },
         {
           headers: {

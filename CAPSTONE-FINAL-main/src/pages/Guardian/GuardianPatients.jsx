@@ -22,7 +22,7 @@ const GuardianPatients = () => {
           throw new Error('Guardian email is missing');
         }
 
-        const response = await axios.get(`http://localhost:5000/api/patient/${email}`, {
+        const response = await axios.get(`http://capstone-production-bd9d.up.railway.app/api/patient/${email}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

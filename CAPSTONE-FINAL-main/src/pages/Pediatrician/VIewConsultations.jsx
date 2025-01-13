@@ -15,7 +15,7 @@ const PediatricianViewConsultation = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/get-consultation-details-for-pediatrician/${consultationId}`,
+          `http://capstone-production-bd9d.up.railway.app/api/get-consultation-details-for-pediatrician/${consultationId}`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           }

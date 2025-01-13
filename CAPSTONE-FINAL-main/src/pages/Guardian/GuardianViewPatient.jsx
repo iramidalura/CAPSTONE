@@ -19,7 +19,7 @@ const GuardianViewPatient = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:5000/api/patient/${email}`, {
+        const response = await axios.get(`http://capstone-production-bd9d.up.railway.app/api/patient/${email}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -66,7 +66,7 @@ const GuardianViewPatient = () => {
   const handleSavePatient = async (patientId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/patient/${patientId}`, editedPatientData, {
+      await axios.put(`http://capstone-production-bd9d.up.railway.app/api/patient/${patientId}`, editedPatientData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
