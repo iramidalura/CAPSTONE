@@ -11,7 +11,7 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, { cors: { origin: 'http://localhost:5173' } });
+const io = socketIo(server, { cors: { origin: 'https://kiddiecare.netlify.app/' } });
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -21,7 +21,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({
-  origin: 'http://localhost:5173', // Allow only the frontend's origin
+  origin: 'https://kiddiecare.netlify.app/', // Allow only the frontend's origin
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 })); // Use built-in JSON body parser from Express
