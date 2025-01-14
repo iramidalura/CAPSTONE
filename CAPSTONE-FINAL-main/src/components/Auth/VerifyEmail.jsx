@@ -7,9 +7,8 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const VerifyEmail = () => {
   const [message, setMessage] = useState('');
+  const token = new URLSearchParams(window.location.search).get('token');
   const navigate = useNavigate();
-  const queryParams = new URLSearchParams(window.location.search);
-  const token = queryParams.get('token');
 
   useEffect(() => {
     if (!token) {
@@ -17,22 +16,25 @@ const VerifyEmail = () => {
       return;
     }
 
-    axios.get(`${apiBaseurl}/api/verify-email?token=${token}`)
+    const timeout = setTimeout(() => navigate('/login'), 3000);
+
+    axios.get(`${apiBaseUrl}/api/verify-email?token=${token}`)
       .then((response) => {
         setMessage(response.data.message);
-        setTimeout(() => navigate('/login'), 3000); // Redirect to login page after 3 seconds
       })
       .catch((error) => {
         setMessage(error.response?.data?.message || 'Verification failed.');
       });
+
+    return () => clearTimeout(timeout);
   }, [token, navigate]);
 
   return (
     <div 
       className="min-h-screen flex items-center justify-center relative"
-      style={{ backgroundImage: `url(${doctorImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} // Set the background image
+      style={{ backgroundImage: `url(${doctorImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      <div className="absolute inset-0 bg-black opacity-50 backdrop-blur-md"></div> {/* Backdrop blur layer */}
+      <div className="absolute inset-0 bg-black opacity-50 backdrop-blur-md"></div>
       <div className="p-8 bg-white bg-opacity-75 shadow-lg rounded-lg max-w-md w-full z-10">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">Email Verification</h1>
         <p className="text-lg text-center text-gray-700">{message}</p>
