@@ -182,6 +182,175 @@ const GuardianEditPatient = () => {
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address
+              </label>
+              <input
+                type="text"
+                name="address"
+                placeholder="Enter Address"
+                value={patientDetails.address}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Father's Name
+              </label>
+              <input
+                type="text"
+                name="fatherName"
+                placeholder="Enter Father's Name"
+                value={patientDetails.fatherName}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Father's Age
+              </label>
+              <input
+                type="number"
+                name="fatherAge"
+                placeholder="Enter Father's Age"
+                value={patientDetails.fatherAge}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Father's Occupation
+              </label>
+              <input
+                type="text"
+                name="fatherOccupation"
+                placeholder="Enter Father's Occupation"
+                value={patientDetails.fatherOccupation}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mother's Name
+              </label>
+              <input
+                type="text"
+                name="motherName"
+                placeholder="Enter Mother's Name"
+                value={patientDetails.motherName}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mother's Age
+              </label>
+              <input
+                type="number"
+                name="motherAge"
+                placeholder="Enter mother's Age"
+                value={patientDetails.motherAge}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mother's Occupation
+              </label>
+              <input
+                type="text"
+                name="motherOccupation"
+                placeholder="Enter Mother's Occupation"
+                value={patientDetails.motherOccupation}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cellphone
+              </label>
+              <input
+                type="text"
+                name="cellphone"
+                placeholder="Enter Cellphone Number"
+                value={patientDetails.cellphone}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mother's Occupation
+              </label>
+              <input
+                type="text"
+                name="motherOccupation"
+                placeholder="Enter Mother's Occupation"
+                value={patientDetails.motherOccupation}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Patient Email
+              </label>
+              <input
+                type="text"
+                name="patientEmail"
+                placeholder="Enter Patient's Email"
+                value={patientDetails.patientEmail}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Relation
+              </label>
+              <input
+                type="text"
+                name="relation"
+                placeholder="Enter Relation"
+                value={patientDetails.relation}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Informant
+              </label>
+              <input
+                type="text"
+                name="informant"
+                placeholder="Enter Informant"
+                value={patientDetails.informant}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+
             {/* Medical History */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const db = require('../config/db');
 const moment = require('moment');
+const patientModel = require('../models/userModel');
 
 const getPatientData = (req, res) => {
   const { email } = req.user;
@@ -168,6 +169,41 @@ const updatePatientData = (req, res) => {
   });
 };
 
+const registerPatient = (req, res) => {
+  const { guardianEmail, ...patientData } = req.body;
+
+  // Retrieve guardian ID based on the email in the users table
+  const getGuardianQuery = 'SELECT id FROM users WHERE email = ?';
+  db.execute(getGuardianQuery, [guardianEmail], (err, result) => {
+    if (err || result.length === 0) {
+      return res.status(400).json({ message: 'Guardian not found' });
+    }
+
+    // Assuming user type is 'Guardian'
+    const guardianId = result[0].id;
+
+    // You could also verify that the user is indeed a Guardian
+    const getGuardianCheckQuery = 'SELECT * FROM guardians WHERE user_id = ?';
+    db.execute(getGuardianCheckQuery, [guardianId], (err, guardianCheckResult) => {
+      if (err || guardianCheckResult.length === 0) {
+        return res.status(400).json({ message: 'Guardian not found in guardians table' });
+      }
+
+      // Assign the guardianId to the patientData and proceed with registration
+      patientData.guardianId = guardianId;
+
+      // Create patient in the database
+      patientModel.createPatient(patientData, (err, result) => {
+        if (err) {
+          return res.status(500).json({ message: 'Failed to register patient' });
+        }
+        res.status(201).json({ message: 'Patient registered successfully' });
+      });
+    });
+  });
+};
 
 
-module.exports = { getPatientData, updatePatientData };
+
+
+module.exports = { getPatientData, updatePatientData, registerPatient };

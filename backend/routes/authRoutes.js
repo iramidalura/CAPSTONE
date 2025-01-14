@@ -8,7 +8,7 @@ const { requestConsultation, getConsultationsForAdmin, updateConsultationStatus,
   getConsultationsForPediatrician, getConsultationDetailsForPediatrician 
  } = require('../controllers/consultationController');
 const { postAvailability, getMarkedDates } = require('../controllers/availabilityController');
-const { getPatientData, updatePatientData } = require('../controllers/patientController');
+const { getPatientData, updatePatientData, registerPatient } = require('../controllers/patientController');
 const { verifyRole } = require('../middleware/authMiddleware');
 const { getUserData, getListUser, getConverstation, getMessages, sendMessage} = require('../controllers/pediatricianController')
 const { getGuardianProfile, updateGuardianProfile, getGuardianMessages, guardianSendMessage, createConversation, sendNewMessage } = require('../controllers/guardianController')
@@ -46,6 +46,8 @@ router.get('/get-appointments/:appointmentId', verifyRole(['Guardian']), getAppo
 router.delete('/appointments/:appointmentId', verifyRole(['Guardian']), deleteAppointment);
 router.get('/get-upcoming-appointments', verifyRole(['Guardian']), getUpcomingAppointmentsForGuardian);
 router.put('/patient/:id', verifyRole(['Guardian']), updatePatientData);
+
+router.get('/patient/register', verifyRole(['Guardian']), registerPatient);
 
 
 // Consultation Routes for Admin
