@@ -1,23 +1,31 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      buffer: 'buffer/',            // Polyfill for buffer
-      stream: 'stream-browserify',  // Polyfill for stream
-      util: 'util',                 // Polyfill for util
-      // Add other modules as needed
+      buffer: 'buffer/',
+      stream: 'stream-browserify',
+      util: 'util',
     },
   },
   define: {
-    global: 'window', // Sets global variable to window for browser compatibility
+    global: 'window',
   },
   build: {
     rollupOptions: {
-      external: ['util'], // Exclude util if it is not directly needed
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return id
+              .toString()
+              .split('node_modules/')[1]
+              .split('/')[0]
+              .toString();
+          }
+        },
+      },
     },
   },
 });
