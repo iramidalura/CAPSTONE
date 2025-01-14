@@ -11,7 +11,7 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, { cors: { origin: 'https://kiddiecare.netlify.app/' } });
+const io = socketIo(server, { cors: { origin: 'https://kiddiecare.netlify.app' } });
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -21,8 +21,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({
-  origin: 'https://kiddiecare.netlify.app/', // Allow only the frontend's origin
-  methods: ['GET', 'POST'],
+  origin: 'https://kiddiecare.netlify.app', // Allow only the frontend's origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 })); // Use built-in JSON body parser from Express
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
