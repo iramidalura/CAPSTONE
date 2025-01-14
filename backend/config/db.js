@@ -1,18 +1,21 @@
-  // config/db.js
-  const mysql = require('mysql2');
-  require('dotenv').config();
+// config/db.js
+const mysql = require('mysql2');
+require('dotenv').config();
 
-  const urlDB = 'mysql://${{procces.env.MYSQLUSER}}:${{process.env.MYSQL_ROOT_PASSWORD}}@${{process.env.RAILWAY_TCP_PROXY_DOMAIN}}:${{process.env.RAILWAY_TCP_PROXY_PORT}}/${{process.env.MYSQL_DATABASE}}'
-  const db = mysql.createConnection({
-    urlDB
-  });
+const db = mysql.createConnection({
+  host: process.env.RAILWAY_TCP_PROXY_DOMAIN, // Railway MySQL host
+  user: process.env.MYSQLUSER, // MySQL username
+  password: process.env.MYSQL_ROOT_PASSWORD, // MySQL password
+  database: process.env.MYSQL_DATABASE, // MySQL database name
+  port: process.env.RAILWAY_TCP_PROXY_PORT // MySQL port
+});
 
-  db.connect((err) => {
-    if (err) {
-      console.error('Database connection error:', err);
-    } else {
-      console.log('Connected to MySQL database');
-    }
-  });
+db.connect((err) => {
+  if (err) {
+    console.error('Database connection error:', err);
+  } else {
+    console.log('Connected to MySQL database');
+  }
+});
 
-  module.exports = db;
+module.exports = db;
