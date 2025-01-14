@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const PediatricianViewConsultation = () => {
   const { consultationId } = useParams();
   const navigate = useNavigate();
