@@ -4,6 +4,8 @@ import axios from 'axios';
 import { IoArrowBack } from 'react-icons/io5';
 import moment from 'moment';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const GuardianViewPatient = () => {
   const { email } = useParams();
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ const GuardianViewPatient = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/patient/${email}`, {
+        const response = await axios.get(`${apiBaseUrl}/api/patient/${email}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -66,7 +68,7 @@ const GuardianViewPatient = () => {
   const handleSavePatient = async (patientId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/patient/${patientId}`, editedPatientData, {
+      await axios.put(`${apiBaseUrl}/api/patient/${patientId}`, editedPatientData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

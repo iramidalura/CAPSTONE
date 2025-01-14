@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; 
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const GuardianProfile = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -22,7 +24,7 @@ const GuardianProfile = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/guardian-get-profile', {
+      const response = await axios.get(`${apiBaseUrl}/api/guardian-get-profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -36,8 +38,8 @@ const GuardianProfile = () => {
       });
 
       if (guardianData.profileImage) {
-        setProfileImage(`${import.meta.env.VITE_API_BASE_URL}${guardianData.profileImage}`);
-        setOriginalProfileImage(`${import.meta.env.VITE_API_BASE_URL}${guardianData.profileImage}`);
+        setProfileImage(`${apiBaseUrl}${guardianData.profileImage}`);
+        setOriginalProfileImage(`${apiBaseUrl}${guardianData.profileImage}`);
       }
     } catch (err) {
       console.error('Error fetching guardian data:', err);
@@ -103,7 +105,7 @@ const GuardianProfile = () => {
       }
   
       const response = await axios.put(
-        '${import.meta.env.VITE_API_BASE_URL}/api/guardian-update-profile',
+        `${apiBaseUrl}/api/guardian-update-profile`,
         updatedFormData,
         {
           headers: {
@@ -124,8 +126,8 @@ const GuardianProfile = () => {
         contact: updatedProfile.contact,
         guardianAddress: updatedProfile.guardianAddress,
       });
-      setProfileImage(`${import.meta.env.VITE_API_BASE_URL}${updatedProfile.profileImage}`);
-      setOriginalProfileImage(`${import.meta.env.VITE_API_BASE_URL}${updatedProfile.profileImage}`);
+      setProfileImage(`${apiBaseUrl}${updatedProfile.profileImage}`);
+      setOriginalProfileImage(`${apiBaseUrl}${updatedProfile.profileImage}`);
       setIsEditing(false);
     } catch (err) {
       console.error('Error saving guardian data:', err);

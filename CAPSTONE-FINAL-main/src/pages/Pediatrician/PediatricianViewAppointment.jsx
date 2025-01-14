@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const PediatricianViewAppointment = () => {
   const { appointmentId } = useParams();
   const navigate = useNavigate();
@@ -14,7 +16,7 @@ const PediatricianViewAppointment = () => {
     const fetchAppointmentDetails = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/get-appointments-pediatrician/${appointmentId}`, {
+        const response = await axios.get(`${apiBaseUrl}/api/get-appointments-pediatrician/${appointmentId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAppointment(response.data);

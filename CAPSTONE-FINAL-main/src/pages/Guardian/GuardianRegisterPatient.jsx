@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { IoArrowBack } from 'react-icons/io5'; // Ensure the icon is imported
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const GuardianRegisterPatient = () => {
   const navigate = useNavigate();
   const [patientDetails, setPatientDetails] = useState({
@@ -42,7 +44,7 @@ const GuardianRegisterPatient = () => {
       const guardianEmail = localStorage.getItem('email');
 
       const response = await axios.post(
-        '${import.meta.env.VITE_API_BASE_URL}/api/patient/register',
+        `${apiBaseUrl}/api/patient/register`,
         { ...patientDetails, guardianEmail },
         {
           headers: {

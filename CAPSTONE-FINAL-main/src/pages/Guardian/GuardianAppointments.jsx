@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';  // Import moment.js
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const GuardianAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ const GuardianAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-appointments', {
+        const response = await axios.get(`${apiBaseUrl}/api/get-appointments`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAppointments(response.data.appointments);

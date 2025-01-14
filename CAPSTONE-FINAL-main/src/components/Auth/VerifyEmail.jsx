@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import doctorImage from "../../assets/doctor.jpg";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const VerifyEmail = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
@@ -15,7 +17,7 @@ const VerifyEmail = () => {
       return;
     }
 
-    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/verify-email?token=${token}`)
+    axios.get(`${apiBaseurl}/api/verify-email?token=${token}`)
       .then((response) => {
         setMessage(response.data.message);
         setTimeout(() => navigate('/login'), 3000); // Redirect to login page after 3 seconds

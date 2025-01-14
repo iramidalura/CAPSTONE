@@ -15,6 +15,7 @@ function convertTo12HourFormat(time24) {
   return `${hour12}:${minutes} ${period}`;
 }
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const GuardianRequestAppointment = () => {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ const GuardianRequestAppointment = () => {
         const userEmail = decoded.email;
 
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/guardian-patient/${userEmail}`,
+          `${apiBaseUrl}/api/guardian-patient/${userEmail}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -88,7 +89,7 @@ const GuardianRequestAppointment = () => {
 
     const fetchAvailableDates = async () => {
       try {
-        const response = await axios.get("${import.meta.env.VITE_API_BASE_URL}/api/marked-dates", {
+        const response = await axios.get(`${apiBaseUrl}/api/marked-dates`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAvailableDates(response.data);
@@ -175,7 +176,7 @@ const GuardianRequestAppointment = () => {
   
       console.log("Submitting payload:", payload);
   
-      await axios.post('${import.meta.env.VITE_API_BASE_URL}/api/appointments/', payload, {
+      await axios.post(`${apiBaseUrl}/api/appointments/`, payload, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
   

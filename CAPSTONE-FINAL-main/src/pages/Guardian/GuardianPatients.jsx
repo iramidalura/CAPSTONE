@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const GuardianPatients = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,7 @@ const GuardianPatients = () => {
           throw new Error('Guardian email is missing');
         }
 
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/patient/${email}`, {
+        const response = await axios.get(`${apiBaseUrl}/api/patient/${email}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

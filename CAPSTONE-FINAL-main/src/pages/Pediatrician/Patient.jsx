@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const Patients = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +14,7 @@ const Patients = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/patients');
+        const response = await axios.get(`${apiBaseUrl}/api/patients`);
         setPatients(response.data);
       } catch (error) {
         console.error('Failed to fetch patients:', error);

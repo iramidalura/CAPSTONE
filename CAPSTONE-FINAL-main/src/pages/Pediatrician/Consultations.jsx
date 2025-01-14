@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment'; // Import moment.js
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const Consultations = () => {
   const [consultations, setConsultations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ const Consultations = () => {
     const fetchConsultations = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-consultations-for-pediatrician', {
+        const response = await axios.get(`${apiBaseUrl}/api/get-consultations-for-pediatrician`, {
           headers: {
             Authorization: `Bearer ${token}`, // Include the token in the request
           },

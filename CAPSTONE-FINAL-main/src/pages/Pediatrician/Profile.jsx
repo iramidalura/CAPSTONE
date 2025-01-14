@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const Profile = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -25,7 +27,7 @@ const Profile = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/pediatrician-get-profile', {
+      const response = await axios.get(`${apiBaseUrl}/api/pediatrician-get-profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -40,8 +42,8 @@ const Profile = () => {
       });
 
       if (pediatricianData.profileImage) {
-        setProfileImage(`${import.meta.env.VITE_API_BASE_URL}${pediatricianData.profileImage}`);
-        setOriginalProfileImage(`${import.meta.env.VITE_API_BASE_URL}${pediatricianData.profileImage}`);
+        setProfileImage(`${apiBaseUrl}${pediatricianData.profileImage}`);
+        setOriginalProfileImage(`${apiBaseUrl}${pediatricianData.profileImage}`);
       }
     } catch (err) {
       console.error('Error fetching pediatrician data:', err);
@@ -103,7 +105,7 @@ const Profile = () => {
       }
 
       const response = await axios.put(
-        '${import.meta.env.VITE_API_BASE_URL}/api/pediatrician-update-profile',
+        `${apiBaseUrl}/api/pediatrician-update-profile`,
         updatedFormData,
         {
           headers: {
@@ -125,8 +127,8 @@ const Profile = () => {
         clinicAddress: updatedProfile.clinicAddress,
         specialization: updatedProfile.specialization, // Handle specialization update
       });
-      setProfileImage(`${import.meta.env.VITE_API_BASE_URL}${updatedProfile.profileImage}`);
-      setOriginalProfileImage(`${import.meta.env.VITE_API_BASE_URL}${updatedProfile.profileImage}`);
+      setProfileImage(`${apiBaseUrl}${updatedProfile.profileImage}`);
+      setOriginalProfileImage(`${apiBaseUrl}${updatedProfile.profileImage}`);
       setIsEditing(false);
     } catch (err) {
       console.error('Error saving pediatrician data:', err);

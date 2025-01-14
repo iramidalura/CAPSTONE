@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { CalendarIcon, PhoneIcon, PencilIcon } from '@heroicons/react/24/outline';
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const GuardianDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [consultations, setConsultations] = useState([]);
@@ -21,7 +23,7 @@ const GuardianDashboard = () => {
         console.log('Token:', token); // Log the token for debugging
 
         // Fetch upcoming appointments
-        const appointmentsResponse = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-upcoming-appointments', {
+        const appointmentsResponse = await axios.get(`${apiBaseUrl}/api/get-upcoming-appointments`, {
           headers: {
             Authorization: `Bearer ${token}`, // Attach the token to the request
           },
@@ -52,7 +54,7 @@ const GuardianDashboard = () => {
         }
 
         // Fetch upcoming consultations
-        const consultationsResponse = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-upcoming-consultations', {
+        const consultationsResponse = await axios.get(`${apiBaseUrl}/api/get-upcoming-consultations`, {
           headers: {
             Authorization: `Bearer ${token}`, // Attach the token to the request
           },

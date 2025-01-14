@@ -8,6 +8,8 @@ import "../../Available.css";
 import moment from "moment-timezone";
 import { jwtDecode } from "jwt-decode";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const AdminMyCalendar = () => {
   const [markedDates, setMarkedDates] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
@@ -24,7 +26,7 @@ const AdminMyCalendar = () => {
         }
       }
 
-      const response = await axios.get("${import.meta.env.VITE_API_BASE_URL}/api/marked-dates", {
+      const response = await axios.get(`${apiBaseUrl}/api/marked-dates`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

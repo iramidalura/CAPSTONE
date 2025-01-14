@@ -8,6 +8,9 @@ import "../../Available.css";
 import moment from "moment-timezone";
 import { jwtDecode } from "jwt-decode";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+
 const MyCalendar = () => {
   const [availability, setAvailability] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
@@ -42,7 +45,7 @@ const MyCalendar = () => {
           console.error("Token expired");
         }
       }
-      const response = await axios.get("${import.meta.env.VITE_API_BASE_URL}/api/marked-dates", {
+      const response = await axios.get(`${apiBaseUrl}/api/marked-dates`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data && typeof response.data === "object") {
@@ -61,7 +64,7 @@ const MyCalendar = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("${import.meta.env.VITE_API_BASE_URL}/api/user-data", {
+        const response = await axios.get(`${apiBaseUrl}/api/user-data`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         const { name, email } = response.data;
@@ -121,7 +124,7 @@ const MyCalendar = () => {
       const token = localStorage.getItem("token");
 
       await axios.post(
-        "${import.meta.env.VITE_API_BASE_URL}/api/availability",
+        `${apiBaseUrl}/api/availability`,
         {
           date: formattedDate,
           ...formData,

@@ -5,11 +5,15 @@ import 'flowbite'; // Import Flowbite components
 import doctorImage from "../../assets/doctor.jpg";
 import { jwtDecode } from 'jwt-decode';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  
+
 
   // Handle form submission for login
   const handleLogin = async (e) => {
@@ -17,7 +21,7 @@ const LoginPage = () => {
   setError('');
 
   try {
-    const response = await axios.post('${import.meta.env.VITE_API_BASE_URL}/api/login', { email, password });
+    const response = await axios.post(`${apiBaseUrl}/api/login`, { email, password });
     const { token, userType } = response.data;
 
     if (token) {

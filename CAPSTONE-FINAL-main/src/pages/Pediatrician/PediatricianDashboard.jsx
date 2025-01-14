@@ -5,6 +5,8 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import moment from "moment-timezone";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const PediatricianDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [consultations, setConsultations] = useState([]);
@@ -19,7 +21,7 @@ const PediatricianDashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "${import.meta.env.VITE_API_BASE_URL}/api/get-appointments-for-pediatrician",
+          `${apiBaseUrl}/api/get-appointments-for-pediatrician`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -55,7 +57,7 @@ const PediatricianDashboard = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "${import.meta.env.VITE_API_BASE_URL}/api/get-consultations-for-pediatrician",
+          `${apiBaseUrl}/api/get-consultations-for-pediatrician`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -90,7 +92,7 @@ const PediatricianDashboard = () => {
     const fetchMarkedDates = async () => {
       try {
         const response = await axios.get(
-          "${import.meta.env.VITE_API_BASE_URL}/api/marked-dates",
+          `${apiBaseUrl}/api/marked-dates`,
           {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }

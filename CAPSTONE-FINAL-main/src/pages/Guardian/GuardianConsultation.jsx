@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const GuardianConsultations = () => {
   const [consultations, setConsultations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ const GuardianConsultations = () => {
     const fetchConsultations = async () => {
       try {
         
-        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/get-consultations', {
+        const response = await axios.get(`${apiBaseUrl}/api/get-consultations`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultations(response.data.consultations);

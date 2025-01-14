@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import moment from 'moment'; // Import moment.js
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const AdminConsultations = () => {
   const [consultations, setConsultations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,7 @@ const AdminConsultations = () => {
   useEffect(() => {
     const fetchConsultations = async () => {
       try {
-        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/consultations-get', {
+        const response = await axios.get(`${apiBaseUrl}/api/consultations-get`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setConsultations(response.data.consultations);
@@ -30,7 +32,7 @@ const AdminConsultations = () => {
   const handleStatusChange = async (consultationId, status) => {
     try {
       await axios.put(
-        '${import.meta.env.VITE_API_BASE_URL}/api/consultations-admin',
+        `${apiBaseUrl}/api/consultations-admin`,
         { consultationId, status },
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );  

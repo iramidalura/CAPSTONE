@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import moment from 'moment'; // Import moment.js for date and time formatting
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const AdminAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,7 @@ const AdminAppointments = () => {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await axios.get('${import.meta.env.VITE_API_BASE_URL}/api/appointments-get', {
+        const response = await axios.get(`${apiBaseUrl}/api/appointments-get`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         setAppointments(response.data.appointments);
@@ -29,7 +31,7 @@ const AdminAppointments = () => {
 
   const handleStatusChange = async (appointmentId, status) => {
     try {
-      await axios.put('${import.meta.env.VITE_API_BASE_URL}/api/appointments-admin', 
+      await axios.put(`${apiBaseUrl}/api/appointments-admin`, 
         { appointmentId, status }, 
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       );
