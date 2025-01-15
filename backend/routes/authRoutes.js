@@ -47,7 +47,7 @@ router.delete('/appointments/:appointmentId', verifyRole(['Guardian']), deleteAp
 router.get('/get-upcoming-appointments', verifyRole(['Guardian']), getUpcomingAppointmentsForGuardian);
 router.put('/patient/:id', verifyRole(['Guardian']), updatePatientData);
 
-router.get('/patient/register', verifyRole(['Guardian']), registerPatient);
+router.post('/patient/register', verifyRole(['Guardian']), registerPatient);
 
 
 // Consultation Routes for Admin
