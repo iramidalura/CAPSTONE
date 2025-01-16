@@ -1,21 +1,35 @@
-const { getGuardianById, updateGuardianById } = require('../models/guardianModel');
+const { getGuardianById, updateGuardianById, getUserWithGuardian } = require('../models/guardianModel');
 const path = require('path');
 const fs = require('fs');
 const db = require("../config/db");
 
 const getGuardianProfile = (req, res) => {
   const userId = req.user.id; // Extract user ID from authenticated request
-  getGuardianById(userId, (err, guardian) => {
+
+  // Map user ID to guardian ID
+  getUserWithGuardian(userId, (err, userGuardianData) => {
     if (err) {
-      console.error('Error fetching guardian profile:', err);
-      return res.status(500).json({ message: 'Failed to fetch guardian profile.' });
+      console.error('Error fetching user-guardian mapping:', err);
+      return res.status(500).json({ message: 'Failed to fetch user-guardian mapping.' });
     }
-    if (!guardian) {
-      return res.status(404).json({ message: 'Guardian not found.' });
+    if (!userGuardianData || !userGuardianData.guardianId) {
+      return res.status(404).json({ message: 'Guardian not found for this user.' });
     }
-    res.json(guardian);
+
+    // Fetch guardian data
+    getGuardianById(userGuardianData.guardianId, (err, guardian) => {
+      if (err) {
+        console.error('Error fetching guardian profile:', err);
+        return res.status(500).json({ message: 'Failed to fetch guardian profile.' });
+      }
+      if (!guardian) {
+        return res.status(404).json({ message: 'Guardian not found.' });
+      }
+      res.json(guardian);
+    });
   });
 };
+
 
 const updateGuardianProfile = (req, res) => {
     const userId = req.user.id;

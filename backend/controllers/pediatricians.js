@@ -1,12 +1,23 @@
 const db = require('../config/db');
-const { getPediatricianById, updatePediatricianById } = require('../models/pediatricianModels');
+const { getPediatricianById, updatePediatricianById, getUserWithPediatrician } = require('../models/pediatricianModels');
 
 // Get pediatrician profile
 const getPediatricianProfile = (req, res) => {
-    const userId = req.user.id; // Extract user ID from authenticated request
-    console.log('Fetching profile for user ID:', userId); // Debugging
+  const userId = req.user.id; // Extract user ID from authenticated request
+  console.log('Fetching profile for user ID:', userId); // Debugging
 
-    getPediatricianById(userId, (err, pediatrician) => {
+  // Map user ID to pediatrician ID
+  getUserWithPediatrician(userId, (err, userPediatricianData) => {
+    if (err) {
+      console.error('Error fetching user-pediatrician mapping:', err);
+      return res.status(500).json({ message: 'Failed to fetch user-pediatrician mapping.' });
+    }
+    if (!userPediatricianData || !userPediatricianData.pediatricianId) {
+      return res.status(404).json({ message: 'Pediatrician not found for this user.' });
+    }
+
+    // Fetch pediatrician data using the pediatrician ID
+    getPediatricianById(userPediatricianData.pediatricianId, (err, pediatrician) => {
       if (err) {
         console.error('Error fetching pediatrician profile:', err);
         return res.status(500).json({ message: 'Failed to fetch pediatrician profile.' });
@@ -16,7 +27,9 @@ const getPediatricianProfile = (req, res) => {
       }
       res.json(pediatrician);
     });
-  };
+  });
+};
+
   
   const updatePediatricianProfile = (req, res) => {
     const userId = req.user.id; // Extract user ID from authenticated request
