@@ -181,6 +181,7 @@ const GuardianRequestAppointment = () => {
       });
   
       setSuccess(true);
+      navigate('/guardian/dashboard');
     } catch (err) {
       console.error("Submission error:", err);
       setError('Failed to request appointment. Please try again.');
