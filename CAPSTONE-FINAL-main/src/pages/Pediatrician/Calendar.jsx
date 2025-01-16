@@ -39,26 +39,26 @@ const MyCalendar = () => {
   const fetchMarkedDates = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (token) {
-        const decoded = jwtDecode(token);
-        if (Date.now() >= decoded.exp * 1000) {
-          console.error("Token expired");
-        }
-      }
       const response = await axios.get(`${apiBaseUrl}/api/marked-dates`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+  
       if (response.data && typeof response.data === "object") {
-        const formattedMarkedDates = Object.keys(response.data).reduce((acc, date) => {
-          acc[date] = response.data[date];
+        const today = moment().startOf("day");
+        const filteredDates = Object.entries(response.data).reduce((acc, [date, data]) => {
+          if (moment(date, "YYYY-MM-DD").isSameOrAfter(today)) {
+            acc[date] = data; // Include only present and future dates
+          }
           return acc;
         }, {});
-        setMarkedDates(formattedMarkedDates);
+  
+        setMarkedDates(filteredDates);
       }
     } catch (error) {
       console.error("Failed to fetch marked dates:", error);
     }
   };
+  
 
   // Fetch user data
   useEffect(() => {

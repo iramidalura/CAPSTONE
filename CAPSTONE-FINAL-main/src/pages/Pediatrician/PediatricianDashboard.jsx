@@ -98,11 +98,31 @@ const PediatricianDashboard = () => {
           }
         );
         console.log("Marked Dates API response:", response.data);
-        setMarkedDates(response.data);
+    
+        if (response.data && typeof response.data === "object") {
+          const today = moment().startOf("day"); // Start of the current day
+    
+          // Filter out past dates
+          const filteredMarkedDates = Object.entries(response.data).reduce(
+            (acc, [date, data]) => {
+              if (moment(date, "YYYY-MM-DD").isSameOrAfter(today)) {
+                acc[date] = data; // Include only present and future dates
+              }
+              return acc;
+            },
+            {}
+          );
+    
+          setMarkedDates(filteredMarkedDates);
+        } else {
+          console.error("Expected an object but got:", response.data);
+          setMarkedDates({});
+        }
       } catch (error) {
         console.error("Error fetching marked dates:", error.response || error);
       }
     };
+    
 
     fetchAppointments();
     fetchConsultations();
