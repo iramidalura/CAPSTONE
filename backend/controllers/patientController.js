@@ -191,10 +191,26 @@ const registerPatient = (req, res) => {
       console.log('Guardian ID found:', guardianId); // Debugging log
 
       // Assign the guardianId to the patientData and proceed with registration
-      patientData.guardianId = guardianId;
+      patientData.guardian_id = guardianCheckResult[0].id; // Ensure to use the correct guardian_id from guardians table
 
       // Create patient in the database
-      patientModel.createPatient(patientData, (err, result) => {
+      const createPatientQuery = `
+        INSERT INTO patients (guardian_id, patientName, patientAge, birthdate, sex, birthplace, religion, address,
+                              fatherName, fatherAge, fatherOccupation, motherName, motherAge, motherOccupation,
+                              cellphone, patientEmail, informant, relation, medicalHistory)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      const patientValues = [
+        patientData.guardian_id, patientData.patientName, patientData.patientAge, patientData.birthdate,
+        patientData.sex, patientData.birthplace, patientData.religion, patientData.address,
+        patientData.fatherName, patientData.fatherAge, patientData.fatherOccupation,
+        patientData.motherName, patientData.motherAge, patientData.motherOccupation,
+        patientData.cellphone, patientData.patientEmail, patientData.informant,
+        patientData.relation, patientData.medicalHistory
+      ];
+
+      db.execute(createPatientQuery, patientValues, (err, result) => {
         if (err) {
           console.error('Error creating patient:', err); // Debugging log
           return res.status(500).json({ message: 'Failed to register patient' });
@@ -204,6 +220,7 @@ const registerPatient = (req, res) => {
     });
   });
 };
+
 
 
 
