@@ -95,7 +95,7 @@ const updateGuardianProfile = (req, res) => {
   
   const createConversation = (req, res) => {
       const {participant_1} = req.body;
-      const query = `insert into conversation (participant_1, participant_2) values(${participant_1}, 6)`
+      const query = `insert into conversation (participant_1, participant_2) values(${participant_1}, 1)`
   
       db.execute(query, (err, result) => {
           if (err) return console.log(err);
