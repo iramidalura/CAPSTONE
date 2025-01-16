@@ -1,13 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { LuMessageSquare } from 'react-icons/lu'; // For Chat/Message
-import { IoIosNotificationsOutline } from 'react-icons/io'; // For Notifications
+import { Link, useNavigate } from 'react-router-dom';
 import { FaNotesMedical } from 'react-icons/fa'; // For Dashboard
 import { FiUser } from 'react-icons/fi'; // For Patients and Profile
-import { FaPrescriptionBottleAlt, FaRegCalendarAlt } from 'react-icons/fa'; // For Prescriptions
+import {  FaPrescriptionBottleAlt, FaRegCalendarAlt } from 'react-icons/fa'; // For Prescriptions
 import { MdOutlineCalendarToday } from 'react-icons/md'; // For Calendar
 import { FaUserMd } from 'react-icons/fa'; // For Users (Doctors)
-import logo from '../../assets/kiddiecare.png';
+import logo from '../../assets/KiddieCare-Logo.png';
 
 const AdminSidebar = () => {
   const SIDEBAR_LINKS = [
@@ -15,14 +13,25 @@ const AdminSidebar = () => {
     { id: 2, path: "/admin/calendar", name: "Calendar", icon: MdOutlineCalendarToday },
     { id: 3, path: "/admin/appointments", name: "Appointments", icon: FaRegCalendarAlt },
     { id: 4, path: "/admin/consultations", name: "Consultations", icon: FaRegCalendarAlt },
-    { id: 5, path: "/admin/patients", name: "Patients", icon: FiUser },
-    { id: 6, path: "/admin/users", name: "Users", icon: FaUserMd },
+    { id: 5, path: "/admin/patients", name: "Patients", icon: FaUserMd },
+    { id: 6, path: "/admin/users", name: "Users", icon: FiUser },
+    { id: 7, path: "/admin/activity-logs", name: "Activity Logs", icon: FaPrescriptionBottleAlt },
   ];
+
+  const navigate = useNavigate();
+
+  // Logout Function
+  const handleLogout = () => {
+    // Clear session or token storage
+    localStorage.removeItem('token'); // Adjust based on your implementation
+    // Navigate to login page
+    navigate('/login');
+  };
 
   return (
     <div className="w-16 md:w-56 fixed left-0 top-0 z-10 h-screen border-r pt-8 px-4 bg-green-800">
       {/* Logo Section */}
-      <div className="mb-5 bg-white flex justify-center">
+      <div className="mb-5 bg-green flex justify-center">
         <img src={logo} alt="logo" className="w-28 hidden md:flex" />
         <img src={logo} alt="logo" className="w-8 flex md:hidden" />
       </div>
@@ -46,6 +55,16 @@ const AdminSidebar = () => {
           </li>
         ))}
       </ul>
+
+      {/* Logout Button */}
+      <div className="mt-8 px-4 py-2">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center md:justify-start space-x-3 bg-red-600 text-white font-medium py-2 px-3 rounded-md hover:bg-red-500"
+        >
+          <span>Logout</span>
+        </button>
+      </div>
 
       {/* Footer Section */}
       <div className="w-full absolute bottom-5 left-0 px-4 py-2 cursor-pointer text-center">

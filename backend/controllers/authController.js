@@ -206,5 +206,17 @@ const verifyEmail = (req, res) => {
   });
 };
 
+const sendPrescription = (req, res) => {
+  const { guardianEmail, prescriptionDetails } = req.body;
 
-module.exports = { registerUser, loginUser, getGuardianAndPatientData, verifyEmail };
+  // Send prescription email with PDF attachment
+  User.sendPrescriptionEmail(guardianEmail, prescriptionDetails, (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error sending prescription email', error: err });
+    }
+    res.status(200).json({ message: 'Prescription sent successfully', result });
+  });
+};
+
+
+module.exports = { registerUser, loginUser, getGuardianAndPatientData, verifyEmail, sendPrescription };

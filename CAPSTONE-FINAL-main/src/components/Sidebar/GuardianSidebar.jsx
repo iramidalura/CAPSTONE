@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LuMessageSquare } from 'react-icons/lu';
 import { FaNotesMedical, FaRegCalendarAlt, FaUser, FaUserCircle } from 'react-icons/fa';
-import logo from '../../assets/kiddie.png';
+import logo from '../../assets/KiddieCare-Logo.png';
 
 const GuardianSidebar = () => {
   const [activeLink, setActiveLink] = useState(1); // Default to dashboard
@@ -22,7 +22,7 @@ const GuardianSidebar = () => {
 
   return (
     <div className="w-16 md:w-56 fixed left-0 top-0 z-10 h-screen border-r pt-8 px-4 bg-green-800">
-      <div className="mb-5 bg-white flex justify-center">
+      <div className="mb-5 bg-green flex justify-center">
         <img src={logo} alt="logo" className="w-28 hidden md:flex" />
         <img src={logo} alt="logo" className="w-8 flex md:hidden" />
       </div>

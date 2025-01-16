@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, verifyEmail, getGuardianAndPatientData } = require('../controllers/authController');
+const { registerUser, loginUser, verifyEmail, getGuardianAndPatientData, sendPrescription } = require('../controllers/authController');
 const { requestAppointment, getAppointmentsForAdmin, updateAppointmentStatus, getAppointmentsForGuardian, getAppointmentDetails,
   deleteAppointment, getUpcomingAppointmentsForGuardian, getAppointmentsForPediatrician, getAppointmentDetailsForPediatrician
  } = require('../controllers/appointmentController');
@@ -85,5 +85,6 @@ router.post('/availability', verifyRole(['Pediatrician']), postAvailability);
 router.get('/get-appointments-pediatrician/:appointmentId', verifyRole(['Pediatrician']), getAppointmentDetailsForPediatrician);
 router.get('/get-appointments-for-pediatrician', verifyRole(['Pediatrician']), getAppointmentsForPediatrician);
 
+router.post('/send-prescription', verifyRole(['Pediatrician']), sendPrescription);
 
 module.exports = router;

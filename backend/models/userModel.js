@@ -1,5 +1,9 @@
 // models/userModel.js
 const db = require('../config/db');
+const PDFDocument = require('pdfkit');
+const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
 // Insert into the users table
 const createUser = (userData, callback) => {
@@ -141,4 +145,93 @@ const findUserByEmail = (email, callback) => {
   });
 };
 
-  module.exports = { createUser, createPediatrician, createGuardian, createPatient, updateEmailVerification, findUserByEmail };
+const sendPrescriptionEmail = (guardianEmail, prescriptionDetails, callback) => {
+  const doc = new PDFDocument();
+  
+  // Define the directory and file path
+  const directoryPath = path.join(__dirname, 'prescriptions');
+  const filePath = path.join(directoryPath, 'prescription.pdf');
+
+  // Ensure the directory exists, create it if not
+  if (!fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath, { recursive: true });
+    console.log('Directory created:', directoryPath);
+  }
+
+  // Create the PDF with prescription details
+  doc.pipe(fs.createWriteStream(filePath));
+
+  // Title section with emoji and text
+  const imagePath = path.join(__dirname, 'img/medicine.png'); // Replace with the correct path
+  doc.image(imagePath, 50, 50, { width: 30, height: 30 }); // Emoji at x=50, y=50
+  doc.fontSize(24).text('Rx', 90, 50); // Text 'Rx' beside emoji
+  doc.fontSize(16).text('PRESCRIPTION', 90, 80); // 'Prescription' below Rx
+  doc.moveDown(2);
+
+  doc.fontSize(16).font('Helvetica-Bold')
+  .text('JOUIE C. BACOT-URCIA, MD', { align: 'center' })
+  .fontSize(12).font('Helvetica')
+  .text('Pediatrician', { align: 'center' })
+  .text('ACE Medical Center: Pimentel St. Lapasan, CDOC', { align: 'center' })
+  .moveDown(2); // Move down for spacing
+
+  // Patient's Information - Left-aligned
+  doc.fontSize(14).font('Helvetica-Bold').text("Patient's Information", { underline: true }).moveDown();
+  doc.fontSize(12).font('Helvetica')
+    .text(`Name: ${prescriptionDetails.patientName}`, { continued: true })
+    .text(`Age: ${prescriptionDetails.patientAge}`, { align: 'right' })
+    .moveDown(1)
+    .text(`Sex: ${prescriptionDetails.patientSex}`, { continued: true })
+    .text(`Date: ${prescriptionDetails.date}`, { align: 'right' })
+    .moveDown(2);
+
+  // Guardian Information
+  doc.fontSize(14).font('Helvetica-Bold').text('Guardian\'s Information', { underline: true }).moveDown();;
+  doc.fontSize(12).font('Helvetica').text(`Email: ${guardianEmail}`).moveDown(2);
+
+  // Prescription Text
+  doc.fontSize(14).font('Helvetica-Bold').text('Prescription', { underline: true }).moveDown();
+  doc.fontSize(12).font('Helvetica').text(prescriptionDetails.prescriptionText).moveDown(5);
+
+  // Footer with doctor info
+  doc.fontSize(10).font('Helvetica-Bold').text('JOUIE C. BACOT-URCIA, MD', { align: 'center' });
+  doc.text('License No: 0115531', { align: 'center' });
+  doc.text('PTR No: ____________', { align: 'center' });
+
+  doc.end();
+
+  // Create email transporter
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: guardianEmail,
+    subject: 'Your Child\'s Prescription',
+    text: 'Please find the attached prescription for your child.',
+    attachments: [
+      {
+        filename: 'prescription.pdf',
+        path: filePath,
+      },
+    ],
+  };
+
+  // Send the email
+  transporter.sendMail(mailOptions, (err, info) => {
+    if (err) {
+      console.log('Error sending email:', err);
+    } else {
+      console.log('Email sent:', info.response);
+    }
+    // Optionally, invoke the callback
+    if (callback) callback();
+  });
+};
+
+  module.exports = { createUser, createPediatrician, createGuardian, createPatient, updateEmailVerification, findUserByEmail, sendPrescriptionEmail };

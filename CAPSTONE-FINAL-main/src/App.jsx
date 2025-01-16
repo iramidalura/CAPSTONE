@@ -48,6 +48,8 @@ import Patients from "./pages/Pediatrician/Patient";
 import AdminAppointments from "./pages/Admin/Appointments";
 import AdminConsultations from "./pages/Admin/Consultations";
 import PediatricianViewConsultation from "./pages/Pediatrician/VIewConsultations";
+import AdminActivityLogs from "./pages/Admin/ActivityLogs";
+import PrescriptionPad from "./pages/Pediatrician/Prescriptions";
 
 function App() {
   return (
@@ -98,6 +100,7 @@ function App() {
           <Route path="activity-log" element={<ActivityLog />} />
           <Route path="settings" element={<Settings />} />
           <Route path="about-us" element={<AboutUs />} />
+          <Route path="prescriptions" element={<PrescriptionPad />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>
@@ -110,6 +113,7 @@ function App() {
           <Route path="calendar" element={<AdminMyCalendar />} />
           <Route path="appointments" element={<AdminAppointments />} />
           <Route path="consultations" element={<AdminConsultations />} />
+          <Route path="activity-logs" element={<AdminActivityLogs />} />
         </Route>
 
         {/* Fallback Route */}
