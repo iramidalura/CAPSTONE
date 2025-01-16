@@ -33,7 +33,7 @@ const getUserWithGuardian = (userId, callback) => {
     const sql = `
       UPDATE guardians
       SET firstname = ?, middlename = ?, lastname = ?, contact = ?, guardianAddress = ?, profileImage = ?
-      WHERE id = ?
+      WHERE user_id = ?
     `;
   
     db.execute(sql, [
