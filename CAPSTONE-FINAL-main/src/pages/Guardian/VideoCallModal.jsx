@@ -4,7 +4,7 @@ import {
   useMeeting,
   useParticipant,
 } from "@videosdk.live/react-sdk";
-import { token, createMeeting } from "../Pediatrician/API";
+import { authToken, createMeeting } from "../Pediatrician/API";
 import ReactPlayer from "react-player";
 
 function JoinScreen({ getMeetingAndToken, setIncomingCall }) {
@@ -170,7 +170,7 @@ function VideoCall({ user, setIncomingCall }) {
 
   const getMeetingAndToken = async (id) => {
     const meetingId =
-      id == null ? await createMeeting({ token: token }) : id;
+      id == null ? await createMeeting({ token: authToken }) : id;
     setMeetingId(meetingId);
   };
 
@@ -178,7 +178,7 @@ function VideoCall({ user, setIncomingCall }) {
     setMeetingId(null);
   };
 
-  return token && meetingId ? (
+  return authToken && meetingId ? (
     <MeetingProvider
       config={{
         meetingId,
@@ -186,7 +186,7 @@ function VideoCall({ user, setIncomingCall }) {
         webcamEnabled: true,
         name: user,
       }}
-      token={token}
+      token={authToken}
     >
       <MeetingView meetingId={meetingId} onMeetingLeave={onMeetingLeave} />
     </MeetingProvider>

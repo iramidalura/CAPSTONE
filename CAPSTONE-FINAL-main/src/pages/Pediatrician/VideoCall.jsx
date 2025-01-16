@@ -4,7 +4,7 @@ import {
   useMeeting,
   useParticipant,
 } from "@videosdk.live/react-sdk";
-import { token, createMeeting } from "./API";
+import { authToken, createMeeting } from "./API";
 import ReactPlayer from "react-player";
 
 function JoinScreen({ getMeetingAndToken, setCalling }) {
@@ -182,7 +182,7 @@ function VideoCall({ user, setCalling }) {
 
   const getMeetingAndToken = async (id) => {
     const meetingId =
-      id == null ? await createMeeting({ token: token }) : id;
+      id == null ? await createMeeting({ token: authToken }) : id;
     setMeetingId(meetingId);
   };
 
@@ -190,7 +190,7 @@ function VideoCall({ user, setCalling }) {
     setMeetingId(null);
   };
 
-  return token && meetingId ? (
+  return authToken && meetingId ? (
     <MeetingProvider
       config={{
         meetingId,
@@ -198,7 +198,7 @@ function VideoCall({ user, setCalling }) {
         webcamEnabled: true,
         name: "DR. " + user,
       }}
-      token={token}
+      token={authToken}
     >
       <MeetingView meetingId={meetingId} onMeetingLeave={onMeetingLeave} setCalling={setCalling} />
     </MeetingProvider>
