@@ -17,10 +17,12 @@ const GuardianDashboard = () => {
         if (!token) {
           console.error('No token found, redirecting to login');
           navigate('/login'); // Redirect to login if no token
-          return;   
+          return;
         }
 
         console.log('Token:', token); // Log the token for debugging
+
+        const today = new Date(); // Get today's date for filtering
 
         // Fetch upcoming appointments
         const appointmentsResponse = await axios.get(`${apiBaseUrl}/api/get-upcoming-appointments`, {
@@ -33,20 +35,18 @@ const GuardianDashboard = () => {
 
         const appointmentsData = appointmentsResponse.data;
         if (Array.isArray(appointmentsData) && appointmentsData.length > 0) {
-          const formattedAppointments = appointmentsData.map((appointment) => {
-            try {
-              return {
-                ...appointment,
-                date: new Date(appointment.date).toLocaleDateString(),
-                time: `${appointment.timeStart} - ${appointment.timeEnd}`,
-              };
-            } catch (error) {
-              console.error('Error formatting appointment:', appointment, error);
-              return appointment; // Return unformatted data as a fallback
-            }
+          const filteredAppointments = appointmentsData.filter((appointment) => {
+            const appointmentDate = new Date(appointment.date);
+            return appointmentDate >= today; // Keep only present and future dates
           });
 
-          console.log('Formatted Appointments:', formattedAppointments);
+          const formattedAppointments = filteredAppointments.map((appointment) => ({
+            ...appointment,
+            date: new Date(appointment.date).toLocaleDateString(),
+            time: `${appointment.timeStart} - ${appointment.timeEnd}`,
+          }));
+
+          console.log('Filtered and Formatted Appointments:', formattedAppointments);
           setAppointments(formattedAppointments);
         } else {
           console.log('No upcoming appointments found.');
@@ -64,20 +64,18 @@ const GuardianDashboard = () => {
 
         const consultationsData = consultationsResponse.data;
         if (Array.isArray(consultationsData) && consultationsData.length > 0) {
-          const formattedConsultations = consultationsData.map((consultation) => {
-            try {
-              return {
-                ...consultation,
-                date: new Date(consultation.date).toLocaleDateString(),
-                time: `${consultation.timeStart} - ${consultation.timeEnd}`,
-              };
-            } catch (error) {
-              console.error('Error formatting consultation:', consultation, error);
-              return consultation; // Return unformatted data as a fallback
-            }
+          const filteredConsultations = consultationsData.filter((consultation) => {
+            const consultationDate = new Date(consultation.date);
+            return consultationDate >= today; // Keep only present and future dates
           });
 
-          console.log('Formatted Consultations:', formattedConsultations);
+          const formattedConsultations = filteredConsultations.map((consultation) => ({
+            ...consultation,
+            date: new Date(consultation.date).toLocaleDateString(),
+            time: `${consultation.timeStart} - ${consultation.timeEnd}`,
+          }));
+
+          console.log('Filtered and Formatted Consultations:', formattedConsultations);
           setConsultations(formattedConsultations);
         } else {
           console.log('No upcoming consultations found.');
@@ -104,7 +102,7 @@ const GuardianDashboard = () => {
       {/* Upcoming Appointments */}
       <div
         className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
-        style={{ maxHeight: '400px', overflowY: 'auto' }} // Added styles for scrollable container
+        style={{ maxHeight: '400px', overflowY: 'auto' }}
       >
         <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
           Upcoming Appointments
@@ -153,7 +151,7 @@ const GuardianDashboard = () => {
       {/* Upcoming Consultations */}
       <div
         className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
-        style={{ maxHeight: '400px', overflowY: 'auto' }} // Added styles for scrollable container
+        style={{ maxHeight: '400px', overflowY: 'auto' }}
       >
         <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
           Upcoming Consultations

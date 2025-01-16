@@ -22,8 +22,15 @@ const Appointments = () => {
             Authorization: `Bearer ${token}`, // Include the token in the request
           },
         });
-        console.log('Appointment details:', response.data);
-        setAppointments(response.data.appointments);
+
+        // Filter appointments to include only present and future dates
+        const today = moment().startOf('day');
+        const filteredAppointments = response.data.appointments.filter((appointment) => {
+          const appointmentDate = moment(appointment.date);
+          return appointmentDate.isSameOrAfter(today);
+        });
+
+        setAppointments(filteredAppointments);
       } catch (error) {
         console.error('Error fetching appointments:', error);
       } finally {
@@ -60,7 +67,6 @@ const Appointments = () => {
       .includes(searchTerm.toLowerCase());
     return nameMatch;
   });
-  
 
   if (loading) {
     return <div className="text-center text-lg">Loading appointments...</div>;

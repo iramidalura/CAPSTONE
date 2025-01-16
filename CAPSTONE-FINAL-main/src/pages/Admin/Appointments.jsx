@@ -18,7 +18,14 @@ const AdminAppointments = () => {
         const response = await axios.get(`${apiBaseUrl}/api/appointments-get`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        setAppointments(response.data.appointments);
+        
+        // Filter out past appointments
+        const filteredAppointments = response.data.appointments.filter((appointment) => {
+          const appointmentDate = moment(appointment.date);
+          return appointmentDate.isSameOrAfter(moment(), 'day'); // Only keep present and future appointments
+        });
+
+        setAppointments(filteredAppointments);
       } catch (error) {
         console.error('Error fetching appointments:', error);
       } finally {
@@ -74,18 +81,18 @@ const AdminAppointments = () => {
   };
 
   const filteredAppointments = sortAppointments(appointments)
-  .filter((appointment) => {
-    const nameMatch = `${appointment.patientFullName} ${appointment.guardianFullName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const statusMatch = statusFilter
-      ? appointment.status.toLowerCase() === statusFilter.toLowerCase()
-      : true;
-    const statusSearchMatch = searchTerm
-      ? appointment.status.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
-    return (nameMatch || statusSearchMatch) && statusMatch;
-  });
+    .filter((appointment) => {
+      const nameMatch = `${appointment.patientFullName} ${appointment.guardianFullName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const statusMatch = statusFilter
+        ? appointment.status.toLowerCase() === statusFilter.toLowerCase()
+        : true;
+      const statusSearchMatch = searchTerm
+        ? appointment.status.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
+      return (nameMatch || statusSearchMatch) && statusMatch;
+    });
 
   if (loading) {
     return <div className="text-center text-lg">Loading appointments...</div>;

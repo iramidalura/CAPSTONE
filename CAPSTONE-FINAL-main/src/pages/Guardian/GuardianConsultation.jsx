@@ -16,11 +16,19 @@ const GuardianConsultations = () => {
   useEffect(() => {
     const fetchConsultations = async () => {
       try {
-        
         const response = await axios.get(`${apiBaseUrl}/api/get-consultations`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        setConsultations(response.data.consultations);
+
+        // Filter out past dates
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset to start of the day
+        const filteredData = response.data.consultations.filter((consultation) => {
+          const consultationDate = new Date(consultation.date);
+          return consultationDate >= today; // Keep only present and future dates
+        });
+
+        setConsultations(filteredData); // Update state with filtered data
       } catch (error) {
         console.error('Error fetching consultations:', error);
       } finally {
@@ -157,7 +165,6 @@ const GuardianConsultations = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 space-x-2">
-                  
                   <button
                     onClick={() => navigate(`/guardian/get-consultation-details/${consultation.consultationId}`)}
                     className="bg-blue-600 text-white py-1 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"

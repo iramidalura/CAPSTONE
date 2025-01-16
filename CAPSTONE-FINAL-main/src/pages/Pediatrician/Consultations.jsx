@@ -23,7 +23,13 @@ const Consultations = () => {
           },
         });
         console.log('Consultation details:', response.data);
-        setConsultations(response.data.consultations);
+
+        // Filter consultations to remove past dates
+        const futureConsultations = response.data.consultations.filter((consultation) => {
+          return moment(consultation.date).isSameOrAfter(moment(), 'day');
+        });
+
+        setConsultations(futureConsultations);
       } catch (error) {
         console.error('Error fetching consultations:', error);
       } finally {

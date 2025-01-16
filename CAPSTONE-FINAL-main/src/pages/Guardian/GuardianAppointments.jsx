@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import moment from 'moment';  // Import moment.js
+import moment from 'moment'; // Import moment.js
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -20,7 +20,14 @@ const GuardianAppointments = () => {
         const response = await axios.get(`${apiBaseUrl}/api/get-appointments`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        setAppointments(response.data.appointments);
+
+        // Filter out past appointments
+        const today = moment().startOf('day'); // Start of today's date
+        const futureAppointments = response.data.appointments.filter((appointment) =>
+          moment(appointment.date).isSameOrAfter(today)
+        );
+
+        setAppointments(futureAppointments);
       } catch (error) {
         console.error('Error fetching appointments:', error);
       } finally {

@@ -18,7 +18,14 @@ const AdminConsultations = () => {
         const response = await axios.get(`${apiBaseUrl}/api/consultations-get`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        setConsultations(response.data.consultations);
+
+        // Filter out past consultations
+        const filteredConsultations = response.data.consultations.filter(consultation => {
+          const consultationDate = moment(consultation.date);
+          return consultationDate.isSameOrAfter(moment(), 'day'); // Keep only present and future dates
+        });
+
+        setConsultations(filteredConsultations);
       } catch (error) {
         console.error('Error fetching consultations:', error);
       } finally {
