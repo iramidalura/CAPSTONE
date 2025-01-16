@@ -179,15 +179,16 @@ const registerPatient = (req, res) => {
       return res.status(400).json({ message: 'Guardian not found' });
     }
 
-    // Assuming user type is 'Guardian'
     const guardianId = result[0].id;
 
-    // You could also verify that the user is indeed a Guardian
+    // Check if guardian exists in the guardians table
     const getGuardianCheckQuery = 'SELECT * FROM guardians WHERE user_id = ?';
     db.execute(getGuardianCheckQuery, [guardianId], (err, guardianCheckResult) => {
       if (err || guardianCheckResult.length === 0) {
         return res.status(400).json({ message: 'Guardian not found in guardians table' });
       }
+
+      console.log('Guardian ID found:', guardianId); // Debugging log
 
       // Assign the guardianId to the patientData and proceed with registration
       patientData.guardianId = guardianId;
@@ -195,6 +196,7 @@ const registerPatient = (req, res) => {
       // Create patient in the database
       patientModel.createPatient(patientData, (err, result) => {
         if (err) {
+          console.error('Error creating patient:', err); // Debugging log
           return res.status(500).json({ message: 'Failed to register patient' });
         }
         res.status(201).json({ message: 'Patient registered successfully' });
@@ -202,6 +204,7 @@ const registerPatient = (req, res) => {
     });
   });
 };
+
 
 
 

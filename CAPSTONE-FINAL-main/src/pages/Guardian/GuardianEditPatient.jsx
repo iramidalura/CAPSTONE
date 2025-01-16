@@ -296,20 +296,6 @@ const GuardianEditPatient = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mother's Occupation
-              </label>
-              <input
-                type="text"
-                name="motherOccupation"
-                placeholder="Enter Mother's Occupation"
-                value={patientDetails.motherOccupation}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Patient Email
               </label>
               <input
