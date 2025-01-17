@@ -13,29 +13,6 @@ const requestConsultation = (req, res) => {
     return res.status(400).json({ message: "All fields are required." });
   }
 
-  // Utility functions
-  const formatTimeSlot = (start, end) => {
-    const addLeadingZero = (time) => (time.length === 7 ? `0${time}` : time);
-    return `${addLeadingZero(start)} - ${addLeadingZero(end)}`;
-  };
-
-  const convertTo24Hour = (time) => {
-    const [hours, minutes, period] = time.match(/(\d+):(\d+)\s(AM|PM)/).slice(1);
-    let hour24 = parseInt(hours, 10);
-    if (period === "PM" && hour24 !== 12) hour24 += 12;
-    if (period === "AM" && hour24 === 12) hour24 = 0;
-    return `${hour24.toString().padStart(2, "0")}:${minutes}:00`;
-  };
-
-  // Convert input times to 24-hour format
-  const convertedTimeStart = convertTo24Hour(timeStart);
-  const convertedTimeEnd = convertTo24Hour(timeEnd);
-  const requestedSlot = formatTimeSlot(convertedTimeStart, convertedTimeEnd);
-
-  console.log("Converted time start:", convertedTimeStart);
-  console.log("Converted time end:", convertedTimeEnd);
-  console.log("Requested time slot:", requestedSlot);
-
   // Query doctor's availability
   const availabilityQuery = `
     SELECT timeSlots 
@@ -49,18 +26,38 @@ const requestConsultation = (req, res) => {
       return res.status(500).json({ message: "Failed to check doctor's availability." });
     }
 
+    console.log("Doctor's availability query result:", results);
+
     if (results.length === 0) {
       console.warn("No availability found for the selected date:", date);
       return res.status(404).json({ message: "No availability found for the selected date." });
     }
 
-    // Convert the database time slots into 24-hour format
-    const timeSlots = JSON.parse(results[0].timeSlots || "[]").map(slot => {
-      const [start, end] = slot.split(" - ");
-      return formatTimeSlot(convertTo24Hour(start), convertTo24Hour(end));
-    });
+    const timeSlots = JSON.parse(results[0].timeSlots || "[]");
+    console.log("Doctor's available time slots:", timeSlots);
 
-    console.log("Doctor's available time slots (converted to 24-hour format):", timeSlots);
+    // Helper functions
+    const formatTimeSlot = (start, end) => {
+      const addLeadingZero = (time) => (time.length === 7 ? `0${time}` : time);
+      return `${addLeadingZero(start)} - ${addLeadingZero(end)}`;
+    };
+
+    const convertTo12Hour = (time) => {
+      let [hour24, minutes] = time.split(":");
+      hour24 = parseInt(hour24, 10); // Convert hour to an integer
+    
+      let period = "AM";
+      if (hour24 >= 12) {
+        period = "PM";
+        if (hour24 > 12) hour24 -= 12; // Convert 24-hour to 12-hour (e.g., 14 -> 2)
+      }
+      if (hour24 === 0) hour24 = 12; // Midnight (00:00) should be 12:00 AM
+    
+      return `${hour24}:${minutes} ${period}`;
+    };
+
+    const requestedSlot = formatTimeSlot(timeStart, timeEnd);
+    console.log("Formatted requested time slot:", requestedSlot);
 
     if (!timeSlots.includes(requestedSlot)) {
       console.warn("Requested time slot is not available:", requestedSlot);
@@ -81,6 +78,10 @@ const requestConsultation = (req, res) => {
       WHERE email = ? AND date = ?
     `;
 
+    console.log("Updating availability with:");
+    console.log("Updated time slots:", JSON.stringify(updatedTimeSlots));
+    console.log("Requested slot to add to bookedTimes:", requestedSlot);
+
     db.execute(
       updateAvailabilityQuery,
       [JSON.stringify(updatedTimeSlots), requestedSlot, requestedSlot, email, date],
@@ -98,6 +99,12 @@ const requestConsultation = (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
         `;
 
+        const convertedTimeStart = convertTo12Hour(timeStart);
+        const convertedTimeEnd = convertTo12Hour(timeEnd);
+
+        console.log("Converted time start:", convertedTimeStart);
+        console.log("Converted time end:", convertedTimeEnd);
+
         db.execute(
           sql,
           [date, convertedTimeStart, convertedTimeEnd, guardianId, patientId, description, email],
@@ -114,7 +121,7 @@ const requestConsultation = (req, res) => {
       }
     );
   });
-};
+
 
 
 
@@ -147,48 +154,31 @@ const updateConsultationStatus = (req, res) => {
 
   console.log('Received data:', req.body);
 
-
+  // Validate required fields
   if (!consultationId || !status) {
     return res.status(400).json({ message: 'Consultation ID and status are required.' });
   }
 
-  const getPediatricianSql = `
-    SELECT id FROM users WHERE userType = 'pediatrician' LIMIT 1;
-  `;
+  // Step 1: Determine the SQL query based on the status
+  const isDeclined = status.toLowerCase() === 'declined';
+  const updateSql = isDeclined
+    ? `UPDATE consultations SET status = ? WHERE id = ?`
+    : `UPDATE consultations SET status = ?, pediatricianId = (SELECT id FROM users WHERE userType = 'pediatrician' LIMIT 1) WHERE id = ?`;
 
+  const params = isDeclined ? [status, consultationId] : [status, consultationId];
 
-
-  db.execute(getPediatricianSql, [], (err, result) => {
+  // Step 2: Execute the query
+  db.execute(updateSql, params, (err, updateResult) => {
     if (err) {
-      return res.status(500).json({ message: 'Error fetching pediatrician ID', error: err });
+      return res.status(500).json({ message: 'Failed to update consultation', error: err });
     }
 
-    if (result.length === 0) {
-      return res.status(404).json({ message: 'No pediatrician found' });
+    // Handle case where consultation ID does not exist
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ message: 'Consultation not found.' });
     }
 
-    const pediatricianId = result[0].id;
-
-    let updateSql = `
-      UPDATE consultations
-      SET status = ?, pediatricianId = ?
-      WHERE id = ?
-    `;
-
-    if (status.toLowerCase() === 'declined') {
-      updateSql = `
-        UPDATE consultations  
-        SET status = ?
-        WHERE id = ?
-      `;
-    }
-
-    db.execute(updateSql, [status, pediatricianId, consultationId], (err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to update consultation', error: err });
-      }
-      res.json({ message: `Consultation status updated to ${status}.` });
-    });
+    res.json({ message: `Consultation status updated to ${status}.` });
   });
 };
 

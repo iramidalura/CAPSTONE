@@ -42,13 +42,20 @@ const requestAppointment = (req, res) => {
       return `${addLeadingZero(start)} - ${addLeadingZero(end)}`;
     };
 
-    const convertTo24Hour = (time) => {
-      const [hours, minutes, period] = time.match(/(\d+):(\d+)\s(AM|PM)/).slice(1);
-      let hour24 = parseInt(hours, 10);
-      if (period === "PM" && hour24 !== 12) hour24 += 12;
-      if (period === "AM" && hour24 === 12) hour24 = 0;
-      return `${hour24.toString().padStart(2, "0")}:${minutes}:00`;
+    const convertTo12Hour = (time) => {
+      let [hour24, minutes] = time.split(":");
+      hour24 = parseInt(hour24, 10); // Convert hour to an integer
+    
+      let period = "AM";
+      if (hour24 >= 12) {
+        period = "PM";
+        if (hour24 > 12) hour24 -= 12; // Convert 24-hour to 12-hour (e.g., 14 -> 2)
+      }
+      if (hour24 === 0) hour24 = 12; // Midnight (00:00) should be 12:00 AM
+    
+      return `${hour24}:${minutes} ${period}`;
     };
+    
 
     const requestedSlot = formatTimeSlot(timeStart, timeEnd);
     console.log("Formatted requested time slot:", requestedSlot);
@@ -93,8 +100,8 @@ const requestAppointment = (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
         `;
 
-        const convertedTimeStart = convertTo24Hour(timeStart);
-        const convertedTimeEnd = convertTo24Hour(timeEnd);
+        const convertedTimeStart = convertTo12Hour(timeStart);
+        const convertedTimeEnd = convertTo12Hour(timeEnd);
 
         console.log("Converted time start:", convertedTimeStart);
         console.log("Converted time end:", convertedTimeEnd);
@@ -154,45 +161,23 @@ const updateAppointmentStatus = (req, res) => {
     return res.status(400).json({ message: 'Appointment ID and status are required.' });
   }
 
-  // Step 1: Get the pediatrician's ID dynamically (assuming there's only one pediatrician)
-  const getPediatricianSql = `
-    SELECT id FROM users WHERE userType = 'pediatrician' LIMIT 1;
-  `;
+  // Step 1: Determine query based on status
+  const isDeclined = status.toLowerCase() === 'declined';
+  const updateSql = isDeclined
+    ? `UPDATE appointments SET status = ? WHERE id = ?`
+    : `UPDATE appointments SET status = ?, pediatricianId = (SELECT id FROM users WHERE userType = 'pediatrician' LIMIT 1) WHERE id = ?`;
 
-  db.execute(getPediatricianSql, [], (err, result) => {
+  const params = isDeclined ? [status, appointmentId] : [status, appointmentId];
+
+  // Step 2: Execute the query
+  db.execute(updateSql, params, (err, updateResult) => {
     if (err) {
-      return res.status(500).json({ message: 'Error fetching pediatrician ID', error: err });
+      return res.status(500).json({ message: 'Failed to update appointment', error: err });
     }
-
-    if (result.length === 0) {
-      return res.status(404).json({ message: 'No pediatrician found' });
+    if (updateResult.affectedRows === 0) {
+      return res.status(404).json({ message: 'Appointment not found.' });
     }
-
-    const pediatricianId = result[0].id; // Get the pediatrician's ID
-
-    // Step 2: If status is 'approved', update with pediatricianId
-    let updateSql = `
-      UPDATE appointments
-      SET status = ?, pediatricianId = ?
-      WHERE id = ?
-    `;
-
-    if (status.toLowerCase() === 'declined') {
-      // If declined, just update the status
-      updateSql = `
-        UPDATE appointments
-        SET status = ?
-        WHERE id = ?
-      `;
-    }
-
-    // Step 3: Execute the update query
-    db.execute(updateSql, [status, pediatricianId, appointmentId], (err, updateResult) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to update appointment', error: err });
-      }
-      res.json({ message: `Appointment status updated to ${status}.` });
-    });
+    res.json({ message: `Appointment status updated to ${status}.` });
   });
 };
 
