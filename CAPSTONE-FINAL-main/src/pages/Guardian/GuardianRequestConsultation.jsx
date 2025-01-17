@@ -14,7 +14,6 @@ function convertTo12HourFormat(time24) {
   const hour12 = hour % 12 || 12; // Convert to 12-hour format
   return `${hour12}:${minutes} ${period}`;
 }
-
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const GuardianRequestConsultation = () => {
