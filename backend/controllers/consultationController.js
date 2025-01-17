@@ -121,8 +121,7 @@ const requestConsultation = (req, res) => {
       }
     );
   });
-
-
+};
 
 
 const getConsultationsForAdmin = (req, res) => {
