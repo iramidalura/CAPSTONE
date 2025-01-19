@@ -3,17 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { IoArrowBack } from 'react-icons/io5';
 import { jwtDecode } from 'jwt-decode';
-import moment from 'moment'
-
-// Function to convert time from 24-hour format to 12-hour format (AM/PM)
-function convertTo12HourFormat(time24) {
-  // Remove any existing AM/PM and split the time into hours and minutes
-  const [hours, minutes] = time24.replace(/\s*(AM|PM)\s*/i, '').split(':');
-  const hour = parseInt(hours, 10);
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12; // Convert to 12-hour format
-  return `${hour12}:${minutes} ${period}`;
-}
+import moment from 'moment';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -92,7 +82,14 @@ const GuardianRequestAppointment = () => {
         const response = await axios.get(`${apiBaseUrl}/api/marked-dates`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
-        setAvailableDates(response.data);
+
+        // Convert dates to a readable format using moment
+        const formattedDates = Object.entries(response.data).reduce((acc, [date, value]) => {
+          acc[moment(date).format('YYYY-MM-DD')] = value;
+          return acc;
+        }, {});
+
+        setAvailableDates(formattedDates);
       } catch (error) {
         console.error('Error fetching available dates:', error);
       }
@@ -120,22 +117,11 @@ const GuardianRequestAppointment = () => {
       ...prevFormData,
       appointment: {
         ...prevFormData.appointment,
-        date: selectedDate,
+        date: moment(selectedDate).format('YYYY-MM-DD'), // Save date in ISO format
         email: doctorEmail,
       },
     }));
-  
-    if (selectedDate === moment().format('YYYY-MM-DD')) {
-      const currentTime = moment();
-      setAvailableTimes(
-        dateData.timeSlots.filter((time) => {
-          const [start] = time.split(' - ');
-          return moment(start, 'hh:mm A').isAfter(currentTime);
-        })
-      );
-    } else {
       setAvailableTimes(dateData ? dateData.timeSlots : []);
-    }
   };
 
   const handlePatientSelect = (e) => {
@@ -157,21 +143,17 @@ const GuardianRequestAppointment = () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('User not authenticated.');
   
-      // Extract time and convert to 12-hour format
+      // Use the selected time slot directly
       const [startTime, endTime] = formData.appointment.time.split(' - ');
-  
-      // Clean the time and convert it
-      const timeStart12 = convertTo12HourFormat(startTime);
-      const timeEnd12 = convertTo12HourFormat(endTime);
   
       const payload = {
         date: formData.appointment.date,
-        timeStart: timeStart12,
-        timeEnd: timeEnd12,
+        timeStart: startTime, // Use raw time without conversion
+        timeEnd: endTime, // Use raw time without conversion
         guardianId: formData.guardian.user_id,
         patientId: parseInt(formData.patient.id, 10),
         description: formData.appointment.description,
-        email: formData.appointment.email, // Include email in payload
+        email: formData.appointment.email,
       };
   
       console.log("Submitting payload:", payload);
@@ -189,8 +171,6 @@ const GuardianRequestAppointment = () => {
     }
   };
   
-  
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-br from-green-50 to-green-100 relative">
       {/* Back Button */}
@@ -227,6 +207,7 @@ const GuardianRequestAppointment = () => {
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's first name"
             required
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -241,6 +222,7 @@ const GuardianRequestAppointment = () => {
             value={formData.guardian.middlename}
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's middle name"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -256,6 +238,7 @@ const GuardianRequestAppointment = () => {
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's last name"
             required
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -271,6 +254,7 @@ const GuardianRequestAppointment = () => {
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's email"
             required
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -309,6 +293,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.patientName || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Patient Name"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -325,6 +310,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.patientAge || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Patient Age"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -339,6 +325,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.birthdate ? moment(formData.patient.birthdate).local().format("YYYY-MM-DD") : ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="birthdate"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -353,6 +340,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.sex || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Sex"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           >
             <option value="">Select Sex</option>
@@ -371,6 +359,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.birthplace || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Birthplace"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -385,6 +374,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.religion || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="religion"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -399,6 +389,7 @@ const GuardianRequestAppointment = () => {
             value={formData.patient.address || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="address"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
