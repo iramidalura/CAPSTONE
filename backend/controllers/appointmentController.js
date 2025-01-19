@@ -89,12 +89,15 @@ const requestAppointment = (req, res) => {
         console.log("Time start:", timeStart);
         console.log("Time end:", timeEnd);
 
+        const sanitizedTimeStart = timeStart.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
+        const sanitizedTimeEnd = timeEnd.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
+
         db.execute(
           sql,
-          [date, timeStart, timeEnd, guardianId, patientId, description, email],
+          [date, sanitizedTimeStart, sanitizedTimeEnd, guardianId, patientId, description, email],
           (createErr, result) => {
             if (createErr) {
-              console.error("Error creating appointment:", createErr);
+              console.error("Error creating appointment:", createErr.message);
               return res.status(500).json({ message: "Failed to create appointment." });
             }
 

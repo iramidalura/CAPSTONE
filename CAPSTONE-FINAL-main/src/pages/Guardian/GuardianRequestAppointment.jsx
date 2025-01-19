@@ -146,10 +146,14 @@ const GuardianRequestAppointment = () => {
       // Use the selected time slot directly
       const [startTime, endTime] = formData.appointment.time.split(' - ');
   
+      // Sanitize time values
+      const sanitizedStartTime = startTime.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
+      const sanitizedEndTime = endTime.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
+  
       const payload = {
         date: formData.appointment.date,
-        timeStart: startTime, // Use raw time without conversion
-        timeEnd: endTime, // Use raw time without conversion
+        timeStart: sanitizedStartTime,
+        timeEnd: sanitizedEndTime,
         guardianId: formData.guardian.user_id,
         patientId: parseInt(formData.patient.id, 10),
         description: formData.appointment.description,
@@ -170,6 +174,7 @@ const GuardianRequestAppointment = () => {
       setLoading(false);
     }
   };
+  
   
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-br from-green-50 to-green-100 relative">
