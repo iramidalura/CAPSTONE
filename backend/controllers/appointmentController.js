@@ -42,21 +42,6 @@ const requestAppointment = (req, res) => {
       return `${addLeadingZero(start)} - ${addLeadingZero(end)}`;
     };
 
-    const convertTo12Hour = (time) => {
-      let [hour24, minutes] = time.split(":");
-      hour24 = parseInt(hour24, 10); // Convert hour to an integer
-    
-      let period = "AM";
-      if (hour24 >= 12) {
-        period = "PM";
-        if (hour24 > 12) hour24 -= 12; // Convert 24-hour to 12-hour (e.g., 14 -> 2)
-      }
-      if (hour24 === 0) hour24 = 12; // Midnight (00:00) should be 12:00 AM
-    
-      return `${hour24}:${minutes} ${period}`;
-    };
-    
-
     const requestedSlot = formatTimeSlot(timeStart, timeEnd);
     console.log("Formatted requested time slot:", requestedSlot);
 
@@ -100,16 +85,13 @@ const requestAppointment = (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
         `;
 
-        // Only pass the raw time without AM/PM
-        const convertedTimeStart = convertTo12Hour(timeStart); // Convert 24-hour time to 12-hour
-        const convertedTimeEnd = convertTo12Hour(timeEnd); // Convert 24-hour time to 12-hour
-
-        console.log("Converted time start:", convertedTimeStart);
-        console.log("Converted time end:", convertedTimeEnd);
+        console.log("Using received time values directly.");
+        console.log("Time start:", timeStart);
+        console.log("Time end:", timeEnd);
 
         db.execute(
           sql,
-          [date, convertedTimeStart, convertedTimeEnd, guardianId, patientId, description, email],
+          [date, timeStart, timeEnd, guardianId, patientId, description, email],
           (createErr, result) => {
             if (createErr) {
               console.error("Error creating appointment:", createErr);
@@ -124,9 +106,6 @@ const requestAppointment = (req, res) => {
     );
   });
 };
-
-
-
 
 // Get all appointments for admin
 const getAppointmentsForAdmin = (req, res) => {
