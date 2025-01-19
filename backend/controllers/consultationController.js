@@ -36,24 +36,10 @@ const requestConsultation = (req, res) => {
     const timeSlots = JSON.parse(results[0].timeSlots || "[]");
     console.log("Doctor's available time slots:", timeSlots);
 
-    // Helper functions
+    // Helper function to format the requested time slot
     const formatTimeSlot = (start, end) => {
       const addLeadingZero = (time) => (time.length === 7 ? `0${time}` : time);
       return `${addLeadingZero(start)} - ${addLeadingZero(end)}`;
-    };
-
-    const convertTo12Hour = (time) => {
-      let [hour24, minutes] = time.split(":");
-      hour24 = parseInt(hour24, 10); // Convert hour to an integer
-    
-      let period = "AM";
-      if (hour24 >= 12) {
-        period = "PM";
-        if (hour24 > 12) hour24 -= 12; // Convert 24-hour to 12-hour (e.g., 14 -> 2)
-      }
-      if (hour24 === 0) hour24 = 12; // Midnight (00:00) should be 12:00 AM
-    
-      return `${hour24}:${minutes} ${period}`;
     };
 
     const requestedSlot = formatTimeSlot(timeStart, timeEnd);
@@ -99,18 +85,19 @@ const requestConsultation = (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
         `;
 
-        const convertedTimeStart = convertTo12Hour(timeStart);
-        const convertedTimeEnd = convertTo12Hour(timeEnd);
+        console.log("Using received time values directly.");
+        console.log("Time start:", timeStart);
+        console.log("Time end:", timeEnd);
 
-        console.log("Converted time start:", convertedTimeStart);
-        console.log("Converted time end:", convertedTimeEnd);
+        const sanitizedTimeStart = timeStart.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
+        const sanitizedTimeEnd = timeEnd.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
 
         db.execute(
           sql,
-          [date, convertedTimeStart, convertedTimeEnd, guardianId, patientId, description, email],
+          [date, sanitizedTimeStart, sanitizedTimeEnd, guardianId, patientId, description, email],
           (createErr, result) => {
             if (createErr) {
-              console.error("Error creating consultation:", createErr);
+              console.error("Error creating consultation:", createErr.message);
               return res.status(500).json({ message: "Failed to create consultation." });
             }
 
@@ -122,7 +109,6 @@ const requestConsultation = (req, res) => {
     );
   });
 };
-
 
 const getConsultationsForAdmin = (req, res) => {
   const sql = `

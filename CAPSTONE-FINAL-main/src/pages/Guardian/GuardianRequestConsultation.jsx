@@ -5,15 +5,6 @@ import { IoArrowBack } from 'react-icons/io5';
 import { jwtDecode } from 'jwt-decode';
 import moment from 'moment'
 
-// Function to convert time from 24-hour format to 12-hour format (AM/PM)
-function convertTo12HourFormat(time24) {
-  // Remove any existing AM/PM and split the time into hours and minutes
-  const [hours, minutes] = time24.replace(/\s*(AM|PM)\s*/i, '').split(':');
-  const hour = parseInt(hours, 10);
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12; // Convert to 12-hour format
-  return `${hour12}:${minutes} ${period}`;
-}
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const GuardianRequestConsultation = () => {
@@ -30,7 +21,7 @@ const GuardianRequestConsultation = () => {
       email: '',
     },
     patient: {
-      id: '', // Initialize patient ID as an empty string
+      id: '',
       patientName: '',
       patientAge: '',
       birthdate: '',
@@ -48,9 +39,9 @@ const GuardianRequestConsultation = () => {
       informant: '',
       relation: '',
     },
-    appointment: {
+    consultation: {
       date: '',
-      time: '', // This will be a string like "start - end"
+      time: '',
       email,
       description: '',
     },
@@ -86,18 +77,18 @@ const GuardianRequestConsultation = () => {
       }
     };
 
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('User not authenticated.');
-
-    const decoded = jwtDecode(token);
-
     const fetchAvailableDates = async () => {
       try {
         const response = await axios.get(`${apiBaseUrl}/api/marked-dates`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
 
-        setAvailableDates(response.data);
+        const formattedDates = Object.entries(response.data).reduce((acc, [date, value]) => {
+          acc[moment(date).format('YYYY-MM-DD')] = value;
+          return acc;
+        }, {});
+
+        setAvailableDates(formattedDates);
       } catch (error) {
         console.error('Error fetching available dates:', error);
       }
@@ -115,33 +106,22 @@ const GuardianRequestConsultation = () => {
   };
 
   const handleDateChange = (e) => {
-      const selectedDate = e.target.value;
-      setSelectedDate(selectedDate);
-    
-      const dateData = availableDates[selectedDate];
-      const doctorEmail = dateData ? dateData.email : '';
-    
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        appointment: {
-          ...prevFormData.appointment,
-          date: selectedDate,
-          email: doctorEmail,
-        },
-      }));
-    
-      if (selectedDate === moment().format('YYYY-MM-DD')) {
-        const currentTime = moment();
-        setAvailableTimes(
-          dateData.timeSlots.filter((time) => {
-            const [start] = time.split(' - ');
-            return moment(start, 'hh:mm A').isAfter(currentTime);
-          })
-        );
-      } else {
-        setAvailableTimes(dateData ? dateData.timeSlots : []);
-      }
-    };
+    const selectedDate = e.target.value;
+    setSelectedDate(selectedDate);
+
+    const dateData = availableDates[selectedDate];
+    const doctorEmail = dateData ? dateData.email : '';
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      consultation: {
+        ...prevFormData.consultation,
+        date: moment(selectedDate).format('YYYY-MM-DD'),
+        email: doctorEmail,
+      },
+    }));
+    setAvailableTimes(dateData ? dateData.timeSlots : []);
+  };
 
   const handlePatientSelect = (e) => {
     const selectedPatientId = e.target.value;
@@ -157,46 +137,40 @@ const GuardianRequestConsultation = () => {
     setLoading(true);
     setError(null);
     setSuccess(false);
-  
+
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('User not authenticated.');
-  
-      // Extract time and convert to 12-hour format
-      const [startTime, endTime] = formData.appointment.time.split(' - ');
-  
-      // Clean the time and convert it
-      const timeStart12 = convertTo12HourFormat(startTime);
-      const timeEnd12 = convertTo12HourFormat(endTime);
-  
+
+      const [startTime, endTime] = formData.consultation.time.split(' - ');
+      const sanitizedStartTime = startTime.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
+      const sanitizedEndTime = endTime.replace(/(AM|PM)\s+(AM|PM)/g, "$1");
+
       const payload = {
-        date: formData.appointment.date,
-        timeStart: timeStart12,
-        timeEnd: timeEnd12,
+        date: formData.consultation.date,
+        timeStart: sanitizedStartTime,
+        timeEnd: sanitizedEndTime,
         guardianId: formData.guardian.user_id,
         patientId: parseInt(formData.patient.id, 10),
-        description: formData.appointment.description,
-        email: formData.appointment.email, // Include email in payload
+        description: formData.consultation.description,
+        email: formData.consultation.email,
       };
-  
+
       console.log("Submitting payload:", payload);
-  
+
       await axios.post(`${apiBaseUrl}/api/consultations/`, payload, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
-  
+
       setSuccess(true);
     } catch (err) {
       console.error("Submission error:", err);
-      setError('Failed to request appointment. Please try again.');
+      setError('Failed to request consultation. Please try again.');
     } finally {
       setLoading(false);
     }
   };
   
-  
-  
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-br from-green-50 to-green-100 relative">
       {/* Back Button */}
@@ -233,6 +207,7 @@ const GuardianRequestConsultation = () => {
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's first name"
             required
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -247,6 +222,7 @@ const GuardianRequestConsultation = () => {
             value={formData.guardian.middlename}
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's middle name"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -262,6 +238,7 @@ const GuardianRequestConsultation = () => {
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's last name"
             required
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -277,6 +254,7 @@ const GuardianRequestConsultation = () => {
             onChange={(e) => handleChange('guardian', e)}
             placeholder="Enter guardian's email"
             required
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -315,6 +293,7 @@ const GuardianRequestConsultation = () => {
             value={formData.patient.patientName || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Patient Name"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -331,6 +310,7 @@ const GuardianRequestConsultation = () => {
             value={formData.patient.patientAge || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Patient Age"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -345,6 +325,7 @@ const GuardianRequestConsultation = () => {
             value={formData.patient.birthdate ? moment(formData.patient.birthdate).local().format("YYYY-MM-DD") : ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="birthdate"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -359,11 +340,13 @@ const GuardianRequestConsultation = () => {
             value={formData.patient.sex || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Sex"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           >
             <option value="">Select Sex</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
+                    readOnly
                   </select>
         </div>
         <div className="flex flex-col">
@@ -377,6 +360,7 @@ const GuardianRequestConsultation = () => {
             value={formData.patient.birthplace || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="Birthplace"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -391,6 +375,7 @@ const GuardianRequestConsultation = () => {
             value={formData.patient.religion || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="religion"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
@@ -405,6 +390,7 @@ const GuardianRequestConsultation = () => {
             value={formData.patient.address || ''}
             onChange={(e) => handleChange('patient', e)}
             placeholder="address"
+            readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
