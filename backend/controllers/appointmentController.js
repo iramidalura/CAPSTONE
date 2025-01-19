@@ -100,8 +100,9 @@ const requestAppointment = (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')
         `;
 
-        const convertedTimeStart = convertTo12Hour(timeStart);
-        const convertedTimeEnd = convertTo12Hour(timeEnd);
+        // Only pass the raw time without AM/PM
+        const convertedTimeStart = convertTo12Hour(timeStart); // Convert 24-hour time to 12-hour
+        const convertedTimeEnd = convertTo12Hour(timeEnd); // Convert 24-hour time to 12-hour
 
         console.log("Converted time start:", convertedTimeStart);
         console.log("Converted time end:", convertedTimeEnd);
@@ -123,6 +124,7 @@ const requestAppointment = (req, res) => {
     );
   });
 };
+
 
 
 
