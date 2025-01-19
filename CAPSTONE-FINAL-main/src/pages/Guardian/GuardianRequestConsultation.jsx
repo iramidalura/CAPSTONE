@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { IoArrowBack } from 'react-icons/io5';
 import { jwtDecode } from 'jwt-decode';
-import moment from 'moment'
+import moment from 'moment';
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -170,7 +170,7 @@ const GuardianRequestConsultation = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-br from-green-50 to-green-100 relative">
       {/* Back Button */}
@@ -396,7 +396,7 @@ const GuardianRequestConsultation = () => {
         </div>
         
 
-        {/* Appointment Details */}
+        {/* consultation Details */}
         <h2 className="text-lg font-semibold text-green-700">Consultation Details</h2>
         <div className="flex flex-col">
         <label htmlFor="patientSelect" className="text-sm font-medium text-gray-700">
@@ -405,7 +405,7 @@ const GuardianRequestConsultation = () => {
         <select
           id="date"
           name="date"
-          value={formData.appointment.date}
+          value={formData.consultation.date}
           onChange={handleDateChange}
           className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
             required
@@ -429,11 +429,11 @@ const GuardianRequestConsultation = () => {
           <select
             id="date"
             name="date"
-            value={formData.appointment.time}
+            value={formData.consultation.time}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                appointment: { ...formData.appointment, time: e.target.value },
+                consultation: { ...formData.consultation, time: e.target.value },
               })
             }
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
@@ -453,14 +453,14 @@ const GuardianRequestConsultation = () => {
             type="text"
             id="doctorEmail"
             name="doctorEmail"
-            value={formData.appointment.email}
+            value={formData.consultation.email}
             readOnly
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm bg-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
         </div>
         </div>
         )}
-        {/* Appointment fields */}
+        {/* consultation fields */}
         <div className="flex flex-col">
           <label htmlFor="middlename" className="text-sm font-medium text-gray-700">
             Description
@@ -468,8 +468,8 @@ const GuardianRequestConsultation = () => {
           <textarea
             name="description"
             id="description"
-            value={formData.appointment.description}
-            onChange={(e) => handleChange('appointment', e)}
+            value={formData.consultation.description}
+            onChange={(e) => handleChange('consultation', e)}
             placeholder="Description"
             className="mt-1 p-3 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
           />
