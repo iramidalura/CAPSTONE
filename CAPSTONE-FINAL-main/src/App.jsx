@@ -50,6 +50,9 @@ import AdminConsultations from "./pages/Admin/Consultations";
 import PediatricianViewConsultation from "./pages/Pediatrician/VIewConsultations";
 import AdminActivityLogs from "./pages/Admin/ActivityLogs";
 import PrescriptionPad from "./pages/Pediatrician/Prescriptions";
+import ViewPatient from "./pages/Pediatrician/ViewPatients";
+import ViewPrescription from "./pages/Pediatrician/ViewPrescriptions";
+import MedicalRecords from "./pages/Pediatrician/MedicalRecords";
 
 function App() {
   return (
@@ -100,7 +103,10 @@ function App() {
           <Route path="activity-log" element={<ActivityLog />} />
           <Route path="settings" element={<Settings />} />
           <Route path="about-us" element={<AboutUs />} />
+          <Route path="/pediatrician/view-patients/:PatientId" element={<ViewPatient />} />
           <Route path="prescriptions" element={<PrescriptionPad />} />
+          <Route path="view-prescriptions" element={<ViewPrescription />} />
+          <Route path="medical-records" element={<MedicalRecords />} />
         </Route>
 
         <Route path="/admin" element={<AdminLayout />}>

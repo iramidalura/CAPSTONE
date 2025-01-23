@@ -52,8 +52,6 @@ const createPediatrician = (pediatricianData, callback) => {
     }
   );
 };
-
-
 // Insert into the guardians table
 const createGuardian = (guardianData, callback) => {
   const sql = `
@@ -76,7 +74,6 @@ const createGuardian = (guardianData, callback) => {
     }
   );
 };
-
 // Insert into the patients table
 const createPatient = (patientData, callback) => {
   const sql = `
@@ -105,7 +102,6 @@ const createPatient = (patientData, callback) => {
     }
   );
 };
-
 
 const updateEmailVerification = (email, callback) => {
   const sql = `UPDATE users SET emailVerified = true WHERE email = ?`;
@@ -221,7 +217,6 @@ const sendPrescriptionEmail = (guardianEmail, prescriptionDetails, callback) => 
       },
     ],
   };
-
   // Send the email
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
@@ -233,5 +228,4 @@ const sendPrescriptionEmail = (guardianEmail, prescriptionDetails, callback) => 
     if (callback) callback();
   });
 };
-
   module.exports = { createUser, createPediatrician, createGuardian, createPatient, updateEmailVerification, findUserByEmail, sendPrescriptionEmail };

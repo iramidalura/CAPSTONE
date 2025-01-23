@@ -112,6 +112,123 @@ const sendMessage = (req, res) => {
     })
 }
 
+const getPatientsForPediatrician = (req, res) => {
+    const { type } = req.query; // Access the 'type' query parameter
+  
+    let sqlQuery;
+  
+    // Choose SQL query based on the 'type' parameter (appointments or consultations)
+    if (type === 'appointments') {
+      sqlQuery = `
+        SELECT 
+        a.id AS appointmentId,
+        a.date,
+        a.timeStart,
+        a.timeEnd,
+        a.description,
+        a.status,
+        CONCAT(g.firstname, ' ', g.middlename, ' ', g.lastname) AS guardianFullName,
+        CONCAT(p.patientName) AS patientFullName,
+        p.sex AS Sex,
+        p.id AS PatientId,
+        'appointment' AS type
+        FROM appointments a
+        JOIN guardians g ON a.guardianId = g.id
+        JOIN patients p ON a.patientId = p.id
+        WHERE a.status = 'approved'
+        
+
+      `;
+    } else if (type === 'consultations') {
+      sqlQuery = `
+        SELECT 
+        c.id AS consultationId,
+        c.date,
+        c.timeStart,
+        c.timeEnd,
+        c.description,
+        c.status,
+        CONCAT(g.firstname, ' ', g.middlename, ' ', g.lastname) AS guardianFullName,
+        CONCAT(p.patientName) AS patientFullName,
+        p.sex AS Sex,
+        p.id AS PatientId,
+        'consultation' AS type
+        FROM consultations c
+        JOIN guardians g ON c.guardianId = g.id
+        JOIN patients p ON c.patientId = p.id
+        WHERE c.status = 'approved'
+        
+
+      `;
+    } else {
+      return res.status(400).json({ message: 'Invalid type' });
+    }
+  
+    // Execute the query
+    db.execute(sqlQuery, [], (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: 'Failed to retrieve data', error: err });
+      }
+      res.json({ patients: results });
+    });
+  };
+
+  const getPatientForPediaDetails = (req, res) => {
+    const { PatientId } = req.params; // PatientId from URL params
+    const { type } = req.query; // Type: appointment or consultation
+  
+    let sqlQuery;
+  
+    // Query details based on the type (appointments or consultations)
+    if (type === 'appointments') {
+      sqlQuery = `
+        SELECT 
+          p.id AS PatientId,
+          p.patientName AS patientFullName,
+          p.sex AS Sex,
+          p.birthdate,
+          p.cellphone AS contactInfo,
+          p.address,
+          CONCAT(g.firstname, ' ', g.middlename, ' ', g.lastname) AS guardianFullName,
+          g.contact AS guardianContact
+        FROM appointments a
+        JOIN patients p ON a.patientId = p.id
+        JOIN guardians g ON a.guardianId = g.id
+        WHERE p.id = ? AND a.status = 'approved'
+      `;
+    } else if (type === 'consultations') {
+      sqlQuery = `
+        SELECT 
+          p.id AS PatientId,
+          p.patientName AS patientFullName,
+          p.sex AS Sex,
+          p.birthdate,
+          p.cellphone AS contactInfo,
+          p.address,
+          CONCAT(g.firstname, ' ', g.middlename, ' ', g.lastname) AS guardianFullName,
+          g.contact AS guardianContact
+        FROM consultations c
+        JOIN patients p ON c.patientId = p.id
+        JOIN guardians g ON c.guardianId = g.id
+        WHERE p.id = ? AND c.status = 'approved'
+      `;
+    } else {
+      return res.status(400).json({ message: 'Invalid type' });
+    }
+  
+    // Execute the query
+    db.execute(sqlQuery, [PatientId], (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: 'Failed to retrieve data', error: err });
+      }
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'Patient not found' });
+      }
+      res.json({ patient: results[0] });
+    });
+  };
+  
+  
 
 module.exports = { 
     getUserData, 
@@ -119,4 +236,6 @@ module.exports = {
     getConverstation,
     getMessages,
     sendMessage,
+    getPatientsForPediatrician,
+    getPatientForPediaDetails
 };

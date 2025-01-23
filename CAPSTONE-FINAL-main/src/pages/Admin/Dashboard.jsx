@@ -1,39 +1,57 @@
 import React, { useEffect, useState } from 'react';
-import { CalendarIcon, UserGroupIcon, ChatBubbleBottomCenterIcon } from '@heroicons/react/24/outline'; // Heroicons for the new icons
+import {
+  CalendarIcon,
+  UserGroupIcon,
+  ChatBubbleBottomCenterIcon,
+} from '@heroicons/react/24/outline'; // Heroicons for the icons
 
 const AdminDashboard = () => {
   const [appointmentsToday, setAppointmentsToday] = useState(0);
   const [consultationsToday, setConsultationsToday] = useState(0);
+  const [totalAppointments, setTotalAppointments] = useState(0);
+  const [totalConsultations, setTotalConsultations] = useState(0);
   const [totalPatients, setTotalPatients] = useState(0);
 
+  const fetchDashboardData = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+  
+      // Add your token here (e.g., from localStorage or state)
+      const token = localStorage.getItem('token'); // Example: Adjust based on your app
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+  
+      // Fetch appointments
+      const appointmentsResponse = await fetch('http://localhost:5000/api/appointments-get', { headers });
+      if (!appointmentsResponse.ok) throw new Error('Failed to fetch appointments');
+      const { appointments } = await appointmentsResponse.json();
+      const todayAppointments = appointments.filter((appointment) => appointment.date === today);
+      setAppointmentsToday(todayAppointments.length);
+      setTotalAppointments(appointments.length);
+  
+      // Fetch consultations
+      const consultationsResponse = await fetch('http://localhost:5000/api/consultations-get', { headers });
+      if (!consultationsResponse.ok) throw new Error('Failed to fetch consultations');
+      const { consultations } = await consultationsResponse.json();
+      const todayConsultations = consultations.filter((consultation) => consultation.date === today);
+      setConsultationsToday(todayConsultations.length);
+      setTotalConsultations(consultations.length);
+  
+      // Fetch total patients
+      const patientsResponse = await fetch('http://localhost:5000/api/patients-get', { headers });
+      if (!patientsResponse.ok) throw new Error('Failed to fetch patients');
+      const { patients } = await patientsResponse.json();
+      setTotalPatients(patients.length);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error.message);
+    }
+  };
+  
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-
-        // Example: Fetch appointments for today (Replace this logic with actual API calls)
-        const appointmentsData = await getAppointments();
-        const appointmentsCount = appointmentsData.filter(
-          (appointment) => appointment.date === today
-        ).length;
-        setAppointmentsToday(appointmentsCount);
-
-        // Example: Fetch consultations for today
-        const consultationsData = await getConsultations();
-        const consultationsCount = consultationsData.filter(
-          (consultation) => consultation.date === today
-        ).length;
-        setConsultationsToday(consultationsCount);
-
-        // Example: Fetch total patients
-        const patientsData = await getPatients();
-        setTotalPatients(patientsData.length);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
-    };
-
-    fetchData();
+    fetchDashboardData();
   }, []);
 
   return (
@@ -50,6 +68,7 @@ const AdminDashboard = () => {
           <CalendarIcon className="h-16 w-16 text-green-600 mb-4" />
           <h2 className="text-6xl font-extrabold text-green-700">{appointmentsToday}</h2>
           <p className="text-xl text-gray-700 mt-4">Appointments Today</p>
+          <p className="text-sm text-gray-500">Total: {totalAppointments}</p>
         </div>
 
         {/* Consultations Today */}
@@ -57,6 +76,7 @@ const AdminDashboard = () => {
           <ChatBubbleBottomCenterIcon className="h-16 w-16 text-green-600 mb-4" />
           <h2 className="text-6xl font-extrabold text-green-700">{consultationsToday}</h2>
           <p className="text-xl text-gray-700 mt-4">Consultations Today</p>
+          <p className="text-sm text-gray-500">Total: {totalConsultations}</p>
         </div>
 
         {/* Total Patients */}

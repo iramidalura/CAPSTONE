@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CalendarIcon } from '@heroicons/react/24/outline';
 import axios from "axios";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
@@ -177,171 +178,186 @@ const PediatricianDashboard = () => {
   };
 
   return (
-    <main className="flex-1 bg-green-100 p-10">
-      <h1 className="text-2xl font-bold mb-6 text-green-900">
+    <main className="flex-1 bg-gradient-to-br from-green-50 to-green-100 p-10 pt-24">
+  {/* Fixed Header */}
+  <header className="fixed top-0 left-16 md:left-56 right-0 bg-gradient-to-br from-green-100 to-green-200 shadow-md p-6 z-50">
+    <div className="flex flex-wrap items-center justify-between">
+      <h1 className="text-3xl font-extrabold text-green-900 tracking-tight">
         Welcome to the Dashboard
       </h1>
-
-      {/* Upcoming Appointments */}
-      <div
-        className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
-        style={{ maxHeight: "400px", overflowY: "auto" }}
-      >
-        <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
-          Upcoming Appointments
-        </h2>
-        {filteredAppointments.length > 0 ? (
-          <ul className="mt-4 space-y-4">
-            {filteredAppointments.map((appointment) => (
-              <li
-                key={appointment.appointmentId}
-                className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="text-lg font-medium text-green-900">
-                      {appointment.patientFullName}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      <strong>Date:</strong>{" "}
-                      {new Date(appointment.date).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <strong>Time:</strong>{" "}
-                      {moment(appointment.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
-                      {moment(appointment.timeEnd, "HH:mm:ss").format("h:mm A")}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <strong>Status:</strong> {appointment.status}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() =>
-                      navigate(
-                        `/pediatrician/get-appointments-pediatrician/${appointment.appointmentId}`
-                      )
-                    }
-                    className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
-                  >
-                    View Details
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-lg text-gray-700 font-light">
-            No upcoming appointments scheduled yet.
-          </p>
-        )}
-      </div>
-
-      {/* Upcoming Consultations */}
-      <div
-        className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
-        style={{ maxHeight: "400px", overflowY: "auto" }}
-      >
-        <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
-          Upcoming Consultations
-        </h2>
-        {filteredConsultations.length > 0 ? (
-          <ul className="mt-4 space-y-4">
-            {filteredConsultations.map((consultation) => (
-              <li
-                key={consultation.consultationId}
-                className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="text-lg font-medium text-green-900">
-                      {consultation.patientFullName}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      <strong>Date:</strong>{" "}
-                      {new Date(consultation.date).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <strong>Time:</strong>{" "}
-                      {moment(consultation.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
-                      {moment(consultation.timeEnd, "HH:mm:ss").format("h:mm A")}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <strong>Status:</strong> {consultation.status}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() =>
-                      navigate(
-                        `/pediatrician/get-consultation-details-for-pediatrician/${consultation.consultationId}`
-                      )
-                    }
-                    className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
-                  >
-                    View Details
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-lg text-gray-700 font-light">
-            No upcoming consultations scheduled yet.
-          </p>
-        )}
-      </div>
-
-      {/* Calendar Section */}
-      <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-600 mb-6 flex flex-col justify-center items-center">
-        <h2
-          className="text-2xl font-bold text-green-900 mb-4 text-center w-full cursor-pointer"
-          onClick={() => navigate("/pediatrician/calendar")}
+      <div className="flex gap-4 mt-4 md:mt-0">
+        <button
+          onClick={() => navigate('/pediatrician/calendar')}
+          className="bg-green-500 text-white py-2 px-4 rounded-md flex items-center gap-2 hover:bg-green-600 transition-all"
         >
+          <CalendarIcon className="h-5 w-5" />
           Calendar
-        </h2>
-        <div className="w-full max-w-[500px]">
-          <Calendar
-            onChange={handleDateChange}
-            value={date}
-            className="react-calendar w-full h-full"
-            tileClassName={tileClassName}
-            onClickDay={handleDateClick}
-          />
-        </div>
+        </button>
       </div>
+    </div>
+  </header>
 
-      {/* Modal for Selected Date */}
-      {modalData && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-2xl font-bold mb-4">
-              {selectedDate} -{" "}
-              {modalData.status === "available" ? "Available" : "Not Available"}
-            </h3>
-            <p>
-              <strong>Name:</strong> {modalData.name}
-            </p>
-            <p>
-              <strong>Email:</strong> {modalData.email}
-            </p>
-            <p>
-              <strong>Status:</strong> {modalData.status}
-            </p>
-            {modalData.timeSlots && (
-              <p>
-                <strong>Time Slots:</strong>{" "}
-                {modalData.timeSlots.join(", ")}
-              </p>
-            )}
-            <button
-              className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
-              onClick={closeModal}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    </main>
+  {/* Upcoming Appointments */}
+  <div
+    className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8 mt-8"
+    style={{ maxHeight: "400px", overflowY: "auto" }}
+  >
+    <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
+      Upcoming Appointments
+    </h2>
+    {filteredAppointments.length > 0 ? (
+      <ul className="mt-4 space-y-4">
+        {filteredAppointments.map((appointment) => (
+          <li
+            key={appointment.appointmentId}
+            className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h4 className="text-lg font-medium text-green-900">
+                  {appointment.patientFullName}
+                </h4>
+                <p className="text-sm text-gray-600">
+                  <strong>Date:</strong>{" "}
+                  {new Date(appointment.date).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Time:</strong>{" "}
+                  {moment(appointment.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
+                  {moment(appointment.timeEnd, "HH:mm:ss").format("h:mm A")}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Status:</strong> {appointment.status}
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  navigate(
+                    `/pediatrician/get-appointments-pediatrician/${appointment.appointmentId}`
+                  )
+                }
+                className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
+              >
+                View Details
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-lg text-gray-700 font-light">
+        No upcoming appointments scheduled yet.
+      </p>
+    )}
+  </div>
+
+  {/* Upcoming Consultations */}
+  <div
+    className="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500 mb-8"
+    style={{ maxHeight: "400px", overflowY: "auto" }}
+  >
+    <h2 className="text-2xl font-bold text-green-700 mb-6 border-b-2 border-green-400 pb-2">
+      Upcoming Consultations
+    </h2>
+    {filteredConsultations.length > 0 ? (
+      <ul className="mt-4 space-y-4">
+        {filteredConsultations.map((consultation) => (
+          <li
+            key={consultation.consultationId}
+            className="p-5 bg-gray-50 shadow-md rounded-lg hover:shadow-lg transition-shadow"
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h4 className="text-lg font-medium text-green-900">
+                  {consultation.patientFullName}
+                </h4>
+                <p className="text-sm text-gray-600">
+                  <strong>Date:</strong>{" "}
+                  {new Date(consultation.date).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Time:</strong>{" "}
+                  {moment(consultation.timeStart, "HH:mm:ss").format("h:mm A")} -{" "}
+                  {moment(consultation.timeEnd, "HH:mm:ss").format("h:mm A")}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Status:</strong> {consultation.status}
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  navigate(
+                    `/pediatrician/get-consultation-details-for-pediatrician/${consultation.consultationId}`
+                  )
+                }
+                className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
+              >
+                View Details
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-lg text-gray-700 font-light">
+        No upcoming consultations scheduled yet.
+      </p>
+    )}
+  </div>
+
+  {/* Calendar Section */}
+  <div className="bg-white p-6 rounded-lg shadow-lg border-l-4 border-green-600 mb-6 flex flex-col justify-center items-center">
+    <h2
+      className="text-2xl font-bold text-green-900 mb-4 text-center w-full cursor-pointer"
+      onClick={() => navigate("/pediatrician/calendar")}
+    >
+      Calendar
+    </h2>
+    <div className="w-full max-w-[500px]">
+      <Calendar
+        onChange={handleDateChange}
+        value={date}
+        className="react-calendar w-full h-full"
+        tileClassName={tileClassName}
+        onClickDay={handleDateClick}
+      />
+    </div>
+  </div>
+
+  {/* Modal for Selected Date */}
+  {modalData && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h3 className="text-2xl font-bold mb-4">
+          {selectedDate} -{" "}
+          {modalData.status === "available" ? "Available" : "Not Available"}
+        </h3>
+        <p>
+          <strong>Name:</strong> {modalData.name}
+        </p>
+        <p>
+          <strong>Email:</strong> {modalData.email}
+        </p>
+        <p>
+          <strong>Status:</strong> {modalData.status}
+        </p>
+        {modalData.timeSlots && (
+          <p>
+            <strong>Time Slots:</strong>{" "}
+            {modalData.timeSlots.join(", ")}
+          </p>
+        )}
+        <button
+          className="mt-4 px-4 py-2 bg-green-500 text-white rounded"
+          onClick={closeModal}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )}
+</main>
+
   );
 };
 

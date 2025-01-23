@@ -10,7 +10,7 @@ const { requestConsultation, getConsultationsForAdmin, updateConsultationStatus,
 const { postAvailability, getMarkedDates } = require('../controllers/availabilityController');
 const { getPatientData, updatePatientData, registerPatient } = require('../controllers/patientController');
 const { verifyRole } = require('../middleware/authMiddleware');
-const { getUserData, getListUser, getConverstation, getMessages, sendMessage} = require('../controllers/pediatricianController')
+const { getUserData, getListUser, getConverstation, getMessages, sendMessage, getPatientForPediaDetails, getPatientsForPediatrician} = require('../controllers/pediatricianController')
 const { getGuardianProfile, updateGuardianProfile, getGuardianMessages, guardianSendMessage, createConversation, sendNewMessage } = require('../controllers/guardianController')
 const upload = require('../middleware/multerMiddleware');
 const { getPediatricianProfile, updatePediatricianProfile } = require('../controllers/pediatricians');
@@ -19,6 +19,8 @@ const { getPediatricianProfile, updatePediatricianProfile } = require('../contro
 
 const router = express.Router();
 
+router.get('/pedia-get-patient', verifyRole(['Pediatrician']), getPatientsForPediatrician);
+router.get('/patient-details/:PatientId', verifyRole(['Pediatrician']), getPatientForPediaDetails);
 router.get('/pediatrician-get-profile', verifyRole(['Pediatrician']), getPediatricianProfile); 
 router.put('/pediatrician-update-profile', verifyRole(['Pediatrician']), upload.single('profileImage'), updatePediatricianProfile); 
 

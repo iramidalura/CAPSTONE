@@ -3,56 +3,36 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const db = require('../config/db');
 
-// Register a new user
 const registerUser = (req, res) => {
-  const { email, password, userType, firstname, middlename, lastname, extension, contact, guardianAddress, clinicAddress, specialization, patientInfo } = req.body;
+  const { email, password, firstname, middlename, lastname, extension, contact, guardianAddress } = req.body;
+
+  const userType = "Guardian";  // Set userType explicitly to Guardian
+  const emailVerified = false;  // Set emailVerified to false by default
 
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({ message: 'Error hashing password' });
     }
 
-    User.createUser({ email, password: hashedPassword, userType }, (error, result) => {
+    User.createUser({ email, password: hashedPassword, userType, emailVerified }, (error, result) => {
       if (error) {
         return res.status(500).json({ message: 'Database error', error });
       }
 
       const userId = result.insertId;
 
-      if (userType === 'Guardian') {
-        const guardianData = { userId, firstname, middlename, lastname, extension, contact, guardianAddress };
-        User.createGuardian(guardianData, (err, guardianResult) => {
-          if (err) {
-            return res.status(500).json({ message: 'Error creating guardian', err });
-          }
+      // Guardian-specific registration
+      const guardianData = { userId, firstname, middlename, lastname, extension, contact, guardianAddress };
+      User.createGuardian(guardianData, (err, guardianResult) => {
+        if (err) {
+          return res.status(500).json({ message: 'Error creating guardian', err });
+        }
 
-          const guardianId = guardianResult.insertId;
+        // Send verification email (if applicable)
+        sendVerificationEmail(email);
 
-          if (patientInfo) {
-            const patientData = { ...patientInfo, guardianId };
-            User.createPatient(patientData, (err) => {
-              if (err) {
-                return res.status(500).json({ message: 'Error creating patient', err });
-              }
-              res.status(201).json({ message: 'Guardian and patient registered successfully' });
-            });
-          } else {
-            res.status(201).json({ message: 'Guardian registered successfully' });
-          }
-        });
-      } else if (userType === 'Pediatrician') {
-        const pediatricianData = { userId, firstname, middlename, lastname, extension, contact, clinicAddress, specialization };
-        User.createPediatrician(pediatricianData, (err) => {
-          if (err) {
-            return res.status(500).json({ message: 'Error creating pediatrician', err });
-          }
-          res.status(201).json({ message: 'Pediatrician registered successfully' });
-        });
-      } else {
-        res.status(201).json({ message: 'User registered successfully' });
-      }
-
-      sendVerificationEmail(email);
+        res.status(201).json({ message: 'Guardian registered successfully' });
+      });
     });
   });
 };

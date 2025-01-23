@@ -1,157 +1,172 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Patients = () => {
   const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOption, setSortOption] = useState('');
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [sortType, setSortType] = useState('patientName'); // Default sort by Patient Name
+  const [sortOrder, setSortOrder] = useState('asc'); // Ascending by default
+  const [type, setType] = useState('appointments'); // Default to appointments
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get(`${apiBaseUrl}/api/patients`);
-        setPatients(response.data);
+        const token = localStorage.getItem('token');  // Adjust if you store it elsewhere
+
+        const response = await fetch(`http://localhost:5000/api/pedia-get-patient?type=${type}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,  // Add token to headers
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Unauthorized access');
+        }
+
+        const data = await response.json();
+        setPatients(data.patients || []);  // Ensure it defaults to an empty array
       } catch (error) {
-        console.error('Failed to fetch patients:', error);
-        setError('Failed to fetch patients. Please try again.');
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch patients:", error);
       }
     };
 
     fetchPatients();
-  }, []);
+  }, [type]); // Fetch data when the type changes
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const toggleDropdown = () => {
-    setDropdownVisible((prev) => !prev);
-  };
-
-  const handleSortChange = (option) => {
-    setSortOption(option);
-    setDropdownVisible(false); // Close dropdown after selection
-  };
-
-  // Filter and sort patients
-  const getFilteredAndSortedPatients = () => {
-    let filtered = patients.filter((patient) => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        patient.name.toLowerCase().includes(searchLower) ||
-        patient.email.toLowerCase().includes(searchLower) ||
-        patient.contact_number.includes(searchLower) ||
-        patient.address.toLowerCase().includes(searchLower)
-      );
-    });
-
-    if (sortOption === 'name') {
-      filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortOption === 'age') {
-      filtered = filtered.sort((a, b) => a.age - b.age);
+  // Function to handle sorting
+  const sortPatients = (patients) => {
+    const sortedPatients = [...patients];
+    switch (sortType) {
+      case 'patientName':
+        sortedPatients.sort((a, b) => a.patientFullName.localeCompare(b.patientFullName));
+        break;
+      case 'age':
+        sortedPatients.sort((a, b) => {
+          const ageA = new Date().getFullYear() - new Date(a.dateCreated).getFullYear();
+          const ageB = new Date().getFullYear() - new Date(b.dateCreated).getFullYear();
+          return ageA - ageB;
+        });
+        break;
+      case 'Sex':
+        sortedPatients.sort((a, b) => a.Sex.localeCompare(b.Sex));
+        break;
+      case 'birthdate':
+        sortedPatients.sort((a, b) => new Date(a.dateCreated) - new Date(b.dateCreated));
+        break;
+      default:
+        break;
     }
 
-    return filtered;
+    return sortOrder === 'asc' ? sortedPatients : sortedPatients.reverse();
   };
 
-  const filteredPatients = getFilteredAndSortedPatients();
+  // Apply search filter
+  const filteredPatients = sortPatients(patients).filter((patient) =>
+    patient.patientFullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.sex.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleView = (PatientId) => {
+    if (PatientId) {
+      navigate(`/pediatrician/view-patients/${PatientId}`, { state: { type } });
+    } else {
+      console.error('PatientId is missing');
+    }
+  };
+  
+  
+
+  const toggleSortOrder = () => {
+    setSortOrder((prevOrder) => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  };
 
   return (
-    <main className="flex-1 bg-green-100 p-10 h-screen">
+    <div className="p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold text-green-700 mb-6">Patients</h1>
 
-      {/* Search and Filter Bar */}
-      <div className="mb-6 flex items-center space-x-4">
-        <input
-          type="text"
-          placeholder="Search patients..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-green-500"
-        />
-
-        <div className="relative">
+      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div className="flex items-center gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300"
+          />
           <button
-            onClick={toggleDropdown}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none"
+            onClick={toggleSortOrder}
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
           >
-            Filter/Sort
+            {sortOrder === 'asc' ? (
+              <span className="text-green-500">↑</span>
+            ) : (
+              <span className="text-green-500">↓</span>
+            )}
           </button>
-          {dropdownVisible && (
-            <div className="absolute right-0 mt-2 bg-white shadow-md rounded-lg border border-gray-200 z-10">
-              <button
-                onClick={() => handleSortChange('name')}
-                className="block px-4 py-2 text-left hover:bg-green-100 w-full"
-              >
-                Sort by Name
-              </button>
-              <button
-                onClick={() => handleSortChange('age')}
-                className="block px-4 py-2 text-left hover:bg-green-100 w-full"
-              >
-                Sort by Age
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Table Container */}
-      <div className="bg-white p-5 rounded-lg shadow-lg">
-        {loading ? (
-          <p className="text-lg text-green-800">Loading patients...</p>
-        ) : error ? (
-          <p className="text-lg text-red-500">{error}</p>
-        ) : filteredPatients.length > 0 ? (
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="bg-green-600 text-white">
-                <th className="py-3 px-4 text-left">Patient ID</th>
-                <th className="py-3 px-4 text-left">Patient Name</th>
-                <th className="py-3 px-4 text-left">Age</th>
-                <th className="py-3 px-4 text-left">Guardian/Parent</th>
-                <th className="py-3 px-4 text-left">Email</th>
-                <th className="py-3 px-4 text-left">Address</th>
-                <th className="py-3 px-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="border-b hover:bg-green-50">
-                  <td className="py-2 px-4">{patient.id}</td>
-                  <td className="py-2 px-4">{patient.name}</td>
-                  <td className="py-2 px-4">{patient.age}</td>
-                  <td className="py-2 px-4">{patient.guardian}</td>
-                  <td className="py-2 px-4">{patient.email}</td>
-                  <td className="py-2 px-4">{patient.address}</td>
-                  <td className="py-2 px-4">
-                    <div className="flex space-x-2">
-                      <button className="text-blue-600 hover:underline">
-                        View
-                      </button>
-                      <button className="text-yellow-500 hover:underline">
-                        Edit
-                      </button>
-                      <button className="text-red-600 hover:underline">
-                        Delete
-                      </button>
-                    </div>
+          <select
+            value={sortType}
+            onChange={(e) => setSortType(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
+          >
+            <option value="patientName">Patient Name</option>
+            <option value="age">Age</option>
+            <option value="sex">Sex</option>
+            <option value="dateCreated">Date Created</option>
+          </select>
+
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-green-300 hover:border-green-500 hover:bg-green-50"
+          >
+            <option value="appointments">Appointments</option>
+            <option value="consultations">Consultations</option>
+          </select>
+        </div>
+
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b">
+              <th className="py-3 px-4">Patient ID</th>
+              <th className="py-3 px-4">Patient Name</th>
+              <th className="py-3 px-4">Sex</th>
+              <th className="py-3 px-4">Type</th>
+              <th className="py-3 px-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPatients.length > 0 ? (
+              filteredPatients.map((patient) => (
+                <tr key={patient.id} className="border-b hover:bg-gray-100">
+                  <td className="py-3 px-4">{patient.PatientId}</td>
+                  <td className="py-3 px-4">{patient.patientFullName}</td>
+                  <td className="py-3 px-4">{patient.Sex}</td>
+                  <td className="py-3 px-4">{type === 'appointments' ? 'Appointment' : 'Consultation'}</td>
+                  <td className="py-3 px-4 space-x-2">
+                    <button
+                      onClick={() => handleView(patient.PatientId)}
+                      className="bg-green-500 text-white py-1 px-3 rounded hover:bg-blue-600 transition"
+                    >
+                      View
+                    </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p className="text-lg text-green-800">No patients found.</p>
-        )}
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="py-4 text-center text-gray-500">
+                  No patients found.  
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-    </main>
+    </div>
   );
 };
 

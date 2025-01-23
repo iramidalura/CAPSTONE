@@ -4,6 +4,7 @@ import axios from 'axios'; // To make API requests
 import 'flowbite'; // Import Flowbite components
 import doctorImage from "../../assets/doctor.jpg";
 import { jwtDecode } from 'jwt-decode';
+import { IoEye, IoEyeOff } from 'react-icons/io5'; // Import eye icons
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,56 +12,55 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const navigate = useNavigate();
-  
-
 
   // Handle form submission for login
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setError('');
+    e.preventDefault();
+    setError('');
 
-  try {
-    const response = await axios.post(`${apiBaseUrl}/api/login`, { email, password });
-    const { token, userType } = response.data;
+    try {
+      const response = await axios.post(`${apiBaseUrl}/api/login`, { email, password });
+      const { token, userType } = response.data;
 
-    if (token) {
-      const decoded = jwtDecode(token);
-      const currentTime = Date.now() / 1000;
+      if (token) {
+        const decoded = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
     
-      console.log('Decoded token:', decoded);
+        console.log('Decoded token:', decoded);
     
-      // Check if token is expired
-      if (decoded.exp < currentTime) {
-        console.log('Token expired. Please login again.');
+        // Check if token is expired
+        if (decoded.exp < currentTime) {
+          console.log('Token expired. Please login again.');
+        } else {
+          console.log('Token is valid.');
+        }
+    
+        // Save the token
+        localStorage.setItem('token', token);
+        localStorage.setItem('email', email);
+        console.log('Token saved to localStorage:', localStorage.getItem('token'));
+        console.log('Email saved to localStorage:', localStorage.getItem('email'));
+        
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        if (userType === 'Guardian') {
+          navigate('/guardian/dashboard');
+        } else if (userType === 'Admin') {
+          navigate('/admin/dashboard');
+        } else if (userType === 'Pediatrician') {
+          navigate('/pediatrician/dashboard');
+        }
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 403) {
+        setError('Your email is not verified. Please verify your email and try again.');
       } else {
-        console.log('Token is valid.');
-      }
-    
-      // Save the token
-      localStorage.setItem('token', token);
-      localStorage.setItem('email', email);
-      console.log('Token saved to localStorage:', localStorage.getItem('token'));
-      console.log('Email saved to localStorage:', localStorage.getItem('email'));
-      
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      if (userType === 'Guardian') {
-        navigate('/guardian/dashboard');
-      } else if (userType === 'Admin') {
-        navigate('/admin/dashboard');
-      } else if (userType === 'Pediatrician') {
-        navigate('/pediatrician/dashboard');
+        setError('Invalid login credentials.');
       }
     }
-  } catch (err) {
-    if (err.response && err.response.status === 403) {
-      setError('Your email is not verified. Please verify your email and try again.');
-    } else {
-      setError('Invalid login credentials.');
-    }
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-200 via-gray-200 to-gray-300 backdrop-blur-lg p-6">
@@ -97,17 +97,26 @@ const LoginPage = () => {
                 />
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block mb-2 text-sm sm:text-base sm:text-lg font-medium text-gray-900">Password</label>
+                <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"} // Toggle password visibility
                   id="password"
-                  className="w-full h-12 text-sm sm:text-base sm:text-lg font-medium px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full h-12 text-sm sm:text-base sm:text-lg font-medium px-4 py-2 pr-12 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
+                >
+                  {showPassword ? <IoEyeOff size={24} /> : <IoEye size={24} />}
+                </button>
+                </div>
               </div>
 
               <div className="flex justify-between items-center">
