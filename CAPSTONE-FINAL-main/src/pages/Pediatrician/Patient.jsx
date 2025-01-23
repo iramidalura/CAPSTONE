@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const Patients = () => {
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,7 +16,7 @@ const Patients = () => {
       try {
         const token = localStorage.getItem('token');  // Adjust if you store it elsewhere
 
-        const response = await fetch(`http://localhost:5000/api/pedia-get-patient?type=${type}`, {
+        const response = await fetch(`${apiBaseUrl}/api/pedia-get-patient?type=${type}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,  // Add token to headers

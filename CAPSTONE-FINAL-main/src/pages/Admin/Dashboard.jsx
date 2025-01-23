@@ -5,6 +5,8 @@ import {
   ChatBubbleBottomCenterIcon,
 } from '@heroicons/react/24/outline'; // Heroicons for the icons
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const AdminDashboard = () => {
   const [appointmentsToday, setAppointmentsToday] = useState(0);
   const [consultationsToday, setConsultationsToday] = useState(0);
@@ -24,7 +26,7 @@ const AdminDashboard = () => {
       };
   
       // Fetch appointments
-      const appointmentsResponse = await fetch('http://localhost:5000/api/appointments-get', { headers });
+      const appointmentsResponse = await fetch(`${apiBaseUrl}/api/appointments-get`, { headers });
       if (!appointmentsResponse.ok) throw new Error('Failed to fetch appointments');
       const { appointments } = await appointmentsResponse.json();
       const todayAppointments = appointments.filter((appointment) => appointment.date === today);
@@ -32,7 +34,7 @@ const AdminDashboard = () => {
       setTotalAppointments(appointments.length);
   
       // Fetch consultations
-      const consultationsResponse = await fetch('http://localhost:5000/api/consultations-get', { headers });
+      const consultationsResponse = await fetch(`${apiBaseUrl}/api/consultations-get`, { headers });
       if (!consultationsResponse.ok) throw new Error('Failed to fetch consultations');
       const { consultations } = await consultationsResponse.json();
       const todayConsultations = consultations.filter((consultation) => consultation.date === today);
@@ -40,7 +42,7 @@ const AdminDashboard = () => {
       setTotalConsultations(consultations.length);
   
       // Fetch total patients
-      const patientsResponse = await fetch('http://localhost:5000/api/patients-get', { headers });
+      const patientsResponse = await fetch('${apiBaseUrl}/api/patients-get', { headers });
       if (!patientsResponse.ok) throw new Error('Failed to fetch patients');
       const { patients } = await patientsResponse.json();
       setTotalPatients(patients.length);

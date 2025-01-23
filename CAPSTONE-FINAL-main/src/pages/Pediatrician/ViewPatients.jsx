@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const ViewPatient = () => {
   const { PatientId } = useParams(); // Get PatientId from the URL
   const { state } = useLocation(); // Access passed state (e.g., type)
@@ -11,7 +13,7 @@ const ViewPatient = () => {
     const fetchPatientDetails = async () => {
       try {
         const token = localStorage.getItem('token'); // Use your auth token if required
-        const response = await fetch(`http://localhost:5000/api/patient-details/${PatientId}?type=${state.type}`, {
+        const response = await fetch(`${apiBaseUrl}/api/patient-details/${PatientId}?type=${state.type}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
